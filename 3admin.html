@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Awards Odds</title>
+  <title>ADMIN</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -59,11 +59,11 @@
         lucide.createIcons();
       }, [nominees, isAuthenticated, loading]);
 
-      const loadData = () => {
+      const loadData = async () => {
         try {
-          const data = localStorage.getItem('golden-globes-best-drama');
-          if (data) {
-            setNominees(JSON.parse(data));
+          const result = await localStorage.getItem('golden-globes-best-drama');
+          if (result && result.value) {
+            setNominees(JSON.parse(result.value));
           }
         } catch (error) {
           console.log('No existing data, starting fresh');
@@ -73,7 +73,7 @@
         }
       };
 
-      const saveData = (updatedNominees) => {
+      const saveData = async (updatedNominees) => {
         try {
           localStorage.setItem('golden-globes-best-drama', JSON.stringify(updatedNominees));
           setNominees(updatedNominees);
@@ -87,7 +87,7 @@
         if (password === ADMIN_PASSWORD) {
           setIsAuthenticated(true);
         } else {
-          alert('Incorrect password');
+          alert('INCORRECT PASSWORD');
         }
       };
 
@@ -110,7 +110,7 @@
       };
 
       const removeNominee = (id) => {
-        const confirmed = window.confirm('Are you sure you want to remove this nominee?');
+        const confirmed = window.confirm('fr?');
         if (confirmed) {
           const updated = nominees.filter(n => n.id !== id);
           saveData(updated);
