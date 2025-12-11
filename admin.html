@@ -191,6 +191,18 @@
         return probToAmericanOdds(avgProb);
       };
 
+      const getTimeAgo = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return '1 day ago';
+        return `${diffDays} days ago`;
+      };
+
       if (!isAuthenticated) {
         return (
           <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
@@ -326,7 +338,7 @@
                             )}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600">
-                            {nominee.lastUpdated || '-'}
+                            {getTimeAgo(nominee.lastUpdated)}
                           </td>
                           {sportsbooks.map(book => {
                             const odds = nominee.odds?.[book.key];
