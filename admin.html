@@ -61,7 +61,7 @@
 
       const loadData = async () => {
         try {
-          const result = await window.storage.get('golden-globes-best-drama');
+          const result = await localStorage.getItem('golden-globes-best-drama');
           if (result && result.value) {
             setNominees(JSON.parse(result.value));
           }
@@ -75,7 +75,7 @@
 
       const saveData = async (updatedNominees) => {
         try {
-          await window.storage.set('golden-globes-best-drama', JSON.stringify(updatedNominees));
+          await localStorage.setItem('golden-globes-best-drama', JSON.stringify(updatedNominees));
           setNominees(updatedNominees);
         } catch (error) {
           console.error('Error saving data:', error);
