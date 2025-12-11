@@ -107,7 +107,12 @@
       }
 
       return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="min-h-screen py-8 px-4" style={{ 
+          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(images/bg.png)', 
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}>
           <div className="max-w-7xl mx-auto">
             <div className="mb-6">
               <a href="index.html" className="text-blue-600 hover:text-blue-800 text-sm">← Back to Home</a>
