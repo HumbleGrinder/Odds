@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Awards Odds</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Lucide icons
+    const Lock = () => <i data-lucide="lock"></i>;
+    const Plus = () => <i data-lucide="plus"></i>;
+    const Trash2 = () => <i data-lucide="trash-2"></i>;
+
+    const AdminPanel = () => {
+      const [isAuthenticated, setIsAuthenticated] = useState(false);
+      const [password, setPassword] = useState('');
+      const [nominees, setNominees] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [editingCell, setEditingCell] = useState(null);
+      const [tempValue, setTempValue] = useState('');
+
+      const ADMIN_PASSWORD = 'admin123';
+      
+      const sportsbooks = [
+        { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
+        { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
+        { key: 'scorebet', label: 'ScoreBet', bgColor: 'bg-blue-900', textColor: 'text-white' },
+        { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
+        { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
+        { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' },
+        { key: 'bet365', label: 'Bet365', bgColor: 'bg-green-500', textColor: 'text-yellow-400' },
+        { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
+        { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' },
+        { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
+        { key: 'bovada', label: 'Bovada', bgColor: 'bg-gray-400', textColor: 'text-red-600' }
+      ];
+
+      useEffect(() => {
+        lucide.createIcons();
+      }, []);
+
+      useEffect(() => {
+        if (isAuthenticated) {
+          loadData();
+        }
+      }, [isAuthenticated]);
+
+      useEffect(() => {
+        lucide.createIcons();
+      }, [nominees, isAuthenticated, loading]);
+
+      const loadData = async () => {
+        try {
+          const result = await window.storage.get('golden-globes-best-drama');
+          if (result && result.value) {
+            setNominees(JSON.parse(result.value));
+          }
+        } catch (error) {
+          console.log('No existing data, starting fresh');
+          setNominees([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const saveData = async (updatedNominees) => {
+        try {
+          await window.storage.set('golden-globes-best-drama', JSON.stringify(updatedNominees));
+          setNominees(updatedNominees);
+        } catch (error) {
+          console.error('Error saving data:', error);
+          alert('Failed to save data. Please try again.');
+        }
+      };
+
+      const handleLogin = () => {
+        if (password === ADMIN_PASSWORD) {
+          setIsAuthenticated(true);
+        } else {
+          alert('Incorrect password');
+        }
+      };
+
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+          handleLogin();
+        }
+      };
+
+      const addNominee = () => {
+        const newNominee = {
+          id: Date.now().toString(),
+          name: 'New Nominee',
+          thumbnail: '',
+          lastUpdated: new Date().toISOString().split('T')[0],
+          odds: {}
+        };
+        const updated = [...nominees, newNominee];
+        saveData(updated);
+      };
+
+      const removeNominee = (id) => {
+        const confirmed = window.confirm('Are you sure you want to remove this nominee?');
+        if (confirmed) {
+          const updated = nominees.filter(n => n.id !== id);
+          saveData(updated);
+        }
+      };
+
+      const startEdit = (nomineeId, field, subfield = null) => {
+        const nominee = nominees.find(n => n.id === nomineeId);
+        let currentValue = '';
+        
+        if (subfield) {
+          currentValue = nominee.odds?.[subfield] || '';
+        } else {
+          currentValue = nominee[field] || '';
+        }
+        
+        setEditingCell({ nomineeId, field, subfield });
+        setTempValue(currentValue);
+      };
+
+      const saveEdit = () => {
+        if (editingCell) {
+          const updated = nominees.map(nominee => {
+            if (nominee.id === editingCell.nomineeId) {
+              const updatedNominee = { ...nominee };
+              
+              if (editingCell.subfield) {
+                updatedNominee.odds = { ...updatedNominee.odds, [editingCell.subfield]: tempValue };
+                updatedNominee.lastUpdated = new Date().toISOString().split('T')[0];
+              } else {
+                updatedNominee[editingCell.field] = tempValue;
+              }
+              
+              return updatedNominee;
+            }
+            return nominee;
+          });
+          
+          saveData(updated);
+          setEditingCell(null);
+          setTempValue('');
+        }
+      };
+
+      const cancelEdit = () => {
+        setEditingCell(null);
+        setTempValue('');
+      };
+
+      const americanOddsToProb = (odds) => {
+        const num = parseFloat(odds);
+        if (isNaN(num)) return null;
+        if (num < 0) {
+          return Math.abs(num) / (Math.abs(num) + 100);
+        } else {
+          return 100 / (num + 100);
+        }
+      };
+
+      const probToAmericanOdds = (prob) => {
+        if (prob >= 0.5) {
+          return Math.round(-(prob * 100) / (1 - prob));
+        } else {
+          return Math.round(((1 - prob) * 100) / prob);
+        }
+      };
+
+      const calculateAverageOdds = (nominee) => {
+        const probs = sportsbooks
+          .map(book => nominee.odds?.[book.key])
+          .filter(odds => odds && odds !== '-')
+          .map(odds => americanOddsToProb(odds))
+          .filter(prob => prob !== null);
+        
+        if (probs.length === 0) return null;
+        
+        const avgProb = probs.reduce((sum, p) => sum + p, 0) / probs.length;
+        return probToAmericanOdds(avgProb);
+      };
+
+      if (!isAuthenticated) {
+        return (
+          <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
+            <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+              <div className="flex justify-center mb-6">
+                <Lock />
+              </div>
+              <h1 className="text-2xl font-bold text-center mb-6">Admin Login</h1>
+              <div>
+                <input
+                  type="password"
+                  placeholder="Enter admin password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  autoFocus
+                />
+                <button
+                  onClick={handleLogin}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+                >
+                  Login
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 text-center mt-4">
+                Default password: admin123
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      if (loading) {
+        return (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-xl text-gray-600">Loading...</div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <a href="index.html" className="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">← Back to Home</a>
+                <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
+                <p className="text-gray-600">Golden Globes - Best Motion Picture Drama</p>
+              </div>
+              <button
+                onClick={addNominee}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+              >
+                <Plus />
+                Add Nominee
+              </button>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-800 text-white">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Nominee</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Thumbnail URL</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Last Updated</th>
+                      {sportsbooks.map(book => (
+                        <th key={book.key} className={`px-4 py-3 text-center text-sm font-semibold whitespace-nowrap ${book.bgColor} ${book.textColor}`}>
+                          {book.label}
+                        </th>
+                      ))}
+                      <th className="px-4 py-3 text-center text-sm font-semibold whitespace-nowrap bg-purple-600 text-white">
+                        Average Odds
+                      </th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nominees.length === 0 ? (
+                      <tr>
+                        <td colSpan={16} className="px-4 py-8 text-center text-gray-500">
+                          No nominees yet. Click "Add Nominee" to get started.
+                        </td>
+                      </tr>
+                    ) : (
+                      nominees.map((nominee, idx) => (
+                        <tr key={nominee.id} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                          <td className="px-4 py-3">
+                            {editingCell?.nomineeId === nominee.id && editingCell?.field === 'name' ? (
+                              <input
+                                type="text"
+                                value={tempValue}
+                                onChange={(e) => setTempValue(e.target.value)}
+                                onBlur={saveEdit}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveEdit();
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                className="w-full px-2 py-1 border border-blue-500 rounded"
+                                autoFocus
+                              />
+                            ) : (
+                              <div
+                                onClick={() => startEdit(nominee.id, 'name')}
+                                className="cursor-pointer hover:bg-blue-50 px-2 py-1 rounded"
+                              >
+                                {nominee.name}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {editingCell?.nomineeId === nominee.id && editingCell?.field === 'thumbnail' ? (
+                              <input
+                                type="text"
+                                value={tempValue}
+                                onChange={(e) => setTempValue(e.target.value)}
+                                onBlur={saveEdit}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveEdit();
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                className="w-full px-2 py-1 border border-blue-500 rounded text-sm"
+                                autoFocus
+                              />
+                            ) : (
+                              <div
+                                onClick={() => startEdit(nominee.id, 'thumbnail')}
+                                className="cursor-pointer hover:bg-blue-50 px-2 py-1 rounded text-sm text-gray-600"
+                              >
+                                {nominee.thumbnail ? '🖼️ ' + nominee.thumbnail.substring(0, 30) + '...' : 'Click to add URL'}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {nominee.lastUpdated || '-'}
+                          </td>
+                          {sportsbooks.map(book => {
+                            const odds = nominee.odds?.[book.key];
+                            return (
+                              <td key={book.key} className={`px-4 py-3 text-center ${book.bgColor}`}>
+                                {editingCell?.nomineeId === nominee.id && editingCell?.subfield === book.key ? (
+                                  <input
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onBlur={saveEdit}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') saveEdit();
+                                      if (e.key === 'Escape') cancelEdit();
+                                    }}
+                                    className="w-20 px-2 py-1 border border-blue-500 rounded text-center"
+                                    placeholder="-130"
+                                    autoFocus
+                                  />
+                                ) : (
+                                  <div
+                                    onClick={() => startEdit(nominee.id, 'odds', book.key)}
+                                    className="cursor-pointer hover:opacity-80 px-2 py-1 rounded min-h-[32px] flex items-center justify-center"
+                                  >
+                                    {odds ? (
+                                      <span className={`font-semibold ${book.textColor}`}>
+                                        {odds}
+                                      </span>
+                                    ) : (
+                                      <span className={book.textColor} style={{ opacity: 0.5 }}>-</span>
+                                    )}
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                          <td className="px-4 py-3 text-center bg-purple-600">
+                            {(() => {
+                              const avgOdds = calculateAverageOdds(nominee);
+                              return avgOdds ? (
+                                <span className="font-bold text-white">
+                                  {avgOdds > 0 ? '+' : ''}{avgOdds}
+                                </span>
+                              ) : (
+                                <span className="text-white" style={{ opacity: 0.5 }}>-</span>
+                              );
+                            })()}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => removeNominee(nominee.id)}
+                              className="text-red-600 hover:text-red-800 transition"
+                              title="Delete nominee"
+                            >
+                              <Trash2 />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+              <p className="font-semibold mb-2">💡 How to use:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Click any cell to edit it</li>
+                <li>Press Enter to save, Escape to cancel</li>
+                <li>Odds format: -130 for favorites, +250 for underdogs</li>
+                <li>Last Updated automatically updates when you change odds</li>
+                <li>Click the trash icon to delete a nominee</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<AdminPanel />, document.getElementById('root'));
+  </script>
+</body>
+</html>
