@@ -133,36 +133,6 @@
         return `${diffDays} days ago`;
       };
 
-      const findBestOdds = (nominee) => {
-        const oddsArray = sportsbooks
-          .map(book => ({
-            book: book.key,
-            odds: nominee.odds?.[book.key]
-          }))
-          .filter(item => item.odds && item.odds !== '-');
-        
-        if (oddsArray.length === 0) return null;
-        
-        // Best odds = most favorable for bettor
-        let best = oddsArray[0];
-        oddsArray.forEach(item => {
-          const current = parseFloat(item.odds);
-          const bestVal = parseFloat(best.odds);
-          
-          // For negative odds, higher is better (-110 better than -150)
-          // For positive odds, higher is better (+250 better than +150)
-          if (current < 0 && bestVal < 0) {
-            if (current > bestVal) best = item;
-          } else if (current > 0 && bestVal > 0) {
-            if (current > bestVal) best = item;
-          } else if (current > 0 && bestVal < 0) {
-            best = item; // Positive always better than negative
-          }
-        });
-  
-  return best.book;
-};
-
       const currentCategory = categories.find(c => c.key === selectedCategory);
 
       if (loading) {
@@ -208,6 +178,7 @@
                   <thead className="bg-gray-800 text-white">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold min-w-[166px]">Nominee</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Last Updated</th>
                       <th className="px-4 py-3 text-center text-sm font-semibold whitespace-nowrap bg-purple-600 text-white">
                         Average Odds
                       </th>
@@ -221,18 +192,13 @@
                   <tbody>
                     {nominees.length === 0 ? (
                       <tr>
-                        <td colSpan={13} className="px-4 py-8 text-center text-gray-500">
+                        <td colSpan={14} className="px-4 py-8 text-center text-gray-500">
                           No nominees added yet. Use the admin panel to add nominees.
                         </td>
                       </tr>
                     ) : (
                       nominees.map((nominee, idx) => (
-                        <tr 
-                          key={nominee.id} 
-                          className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
-                          title={`Last updated: ${getTimeAgo(nominee.lastUpdated)}`}
-                          style={{ cursor: 'help' }}
-                        >
+                        <tr key={nominee.id} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                           <td className="px-4 py-3 min-w-[166px]">
                             <div className="flex items-center gap-3">
                               {nominee.thumbnail ? (
@@ -251,7 +217,10 @@
                               )}
                               <span className="font-medium text-gray-900">{nominee.name}</span>
                             </div>
-                          </td>                          
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {getTimeAgo(nominee.lastUpdated)}
+                          </td>
                           <td className="px-4 py-3 text-center bg-purple-600">
                             {(() => {
                               const avgData = calculateAverageOdds(nominee);
@@ -271,18 +240,10 @@
                           </td>
                           {sportsbooks.map(book => {
                             const odds = nominee.odds?.[book.key];
-                            const bestBook = findBestOdds(nominee);
-                            const isBest = book.key === bestBook;
                             return (
-                              <td 
-                                key={book.key} 
-                                className={`px-4 py-3 text-center ${book.bgColor}`}
-                                style={isBest ? { backgroundColor: '#ffff00' } : {}}
-                              >
+                              <td key={book.key} className={`px-4 py-3 text-center ${book.bgColor}`}>
                                 {odds ? (
-                                  <span 
-                                    className={`${isBest ? 'font-black' : 'font-semibold'} ${isBest ? 'text-black' : book.textColor}`}
-                                  >
+                                  <span className={`font-semibold ${book.textColor}`}>
                                     {odds}
                                   </span>
                                 ) : (
