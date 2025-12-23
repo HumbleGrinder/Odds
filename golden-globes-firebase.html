@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golden Globes 2025 - Betting Odds</title>
+  
+  <!-- Firebase CDN Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAcJTHkUYTW1zd7PSAHJ6ZpGCxI69CDDaE",
+      authDomain: "odds-32154.firebaseapp.com",
+      databaseURL: "https://odds-32154-default-rtdb.firebaseio.com",
+      projectId: "odds-32154",
+      storageBucket: "odds-32154.firebasestorage.app",
+      messagingSenderId: "239351340320",
+      appId: "1:239351340320:web:88f4473d0ec8801ed4cb45"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const GoldenGlobes = () => {
+      const [nominees, setNominees] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [selectedCategory, setSelectedCategory] = useState('best-drama');
+
+      const categories = [
+        { key: 'best-drama', label: 'Best Motion Picture - Drama' },
+        { key: 'best-comedy', label: 'Best Motion Picture - Musical or Comedy' },
+        { key: 'best-director', label: 'Best Director' },
+        { key: 'best-actor-drama', label: 'Best Actor - Drama' },
+        { key: 'best-actress-drama', label: 'Best Actress - Drama' },
+        { key: 'best-actor-comedy', label: 'Best Actor - Musical or Comedy' },
+        { key: 'best-actress-comedy', label: 'Best Actress - Musical or Comedy' },
+        { key: 'best-supporting-actor', label: 'Best Supporting Actor' },
+        { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
+        { key: 'best-screenplay', label: 'Best Screenplay' }
+      ];
+
+      const sportsbooks = [
+        { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
+        { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
+        { key: 'scorebet', label: 'ScoreBet', bgColor: 'bg-blue-900', textColor: 'text-white' },
+        { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
+        { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
+        { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' },
+        { key: 'bet365', label: 'Bet365', bgColor: 'bg-green-500', textColor: 'text-yellow-400' },
+        { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
+        { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' },
+        { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
+        { key: 'bovada', label: 'Bovada', bgColor: 'bg-gray-400', textColor: 'text-red-600' }
+      ];
+
+      useEffect(() => {
+        fetchData();
+      }, [selectedCategory]);
+
+      const fetchData = () => {
+        setLoading(true);
+        const dbRef = firebase.database().ref(`golden-globes/${selectedCategory}/nominees`);
+        
+        dbRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            setNominees(data);
+          } else {
+            setNominees([]);
+          }
+          setLoading(false);
+        });
+
+        return () => dbRef.off();
+      };
+
+      const americanOddsToProb = (odds) => {
+        const num = parseFloat(odds);
+        if (isNaN(num)) return null;
+        if (num < 0) {
+          return Math.abs(num) / (Math.abs(num) + 100);
+        } else {
+          return 100 / (num + 100);
+        }
+      };
+
+      const probToAmericanOdds = (prob) => {
+        if (prob >= 0.5) {
+          return Math.round(-(prob * 100) / (1 - prob));
+        } else {
+          return Math.round(((1 - prob) * 100) / prob);
+        }
+      };
+
+      const calculateAverageOdds = (nominee) => {
+        const probs = sportsbooks
+          .map(book => nominee.odds?.[book.key])
+          .filter(odds => odds && odds !== '-')
+          .map(odds => americanOddsToProb(odds))
+          .filter(prob => prob !== null);
+        
+        if (probs.length === 0) return null;
+        
+        const avgProb = probs.reduce((sum, p) => sum + p, 0) / probs.length;
+        return {
+          odds: probToAmericanOdds(avgProb),
+          percentage: Math.round(avgProb * 100)
+        };
+      };
+
+      const getTimeAgo = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return '1 day ago';
+        return `${diffDays} days ago`;
+      };
+
+      const currentCategory = categories.find(c => c.key === selectedCategory);
+
+      if (loading) {
+        return (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-xl text-gray-600">Loading odds...</div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen py-8 px-4" style={{ 
+          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(images/bg.png)', 
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}>
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-6">
+              <a href="index.html" className="text-white hover:text-blue-300 text-sm">← Back to Home</a>
+            </div>
+            
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Golden Globes 2025
+            </h1>
+
+            {/* Category Dropdown */}
+            <div className="mb-6">
+              <select 
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-white border-2 border-gray-300 rounded-lg px-4 py-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {categories.map(cat => (
+                  <option key={cat.key} value={cat.key}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-800 text-white">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold min-w-[166px]">Nominee</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Last Updated</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold whitespace-nowrap bg-purple-600 text-white">
+                        Average Odds
+                      </th>
+                      {sportsbooks.map(book => (
+                        <th key={book.key} className={`px-4 py-3 text-center text-sm font-semibold whitespace-nowrap ${book.bgColor} ${book.textColor}`}>
+                          {book.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nominees.length === 0 ? (
+                      <tr>
+                        <td colSpan={14} className="px-4 py-8 text-center text-gray-500">
+                          No nominees added yet. Use the admin panel to add nominees.
+                        </td>
+                      </tr>
+                    ) : (
+                      nominees.map((nominee, idx) => (
+                        <tr key={nominee.id} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                          <td className="px-4 py-3 min-w-[166px]">
+                            <div className="flex items-center gap-3">
+                              {nominee.thumbnail ? (
+                                <img 
+                                  src={nominee.thumbnail} 
+                                  alt={nominee.name}
+                                  className="w-12 h-16 object-cover rounded"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-12 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+                                  No image
+                                </div>
+                              )}
+                              <span className="font-medium text-gray-900">{nominee.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {getTimeAgo(nominee.lastUpdated)}
+                          </td>
+                          <td className="px-4 py-3 text-center bg-purple-600">
+                            {(() => {
+                              const avgData = calculateAverageOdds(nominee);
+                              return avgData ? (
+                                <div className="flex flex-col items-center">
+                                  <span className="font-bold text-white">
+                                    {avgData.odds > 0 ? '+' : ''}{avgData.odds}
+                                  </span>
+                                  <span className="text-xs text-white opacity-75">
+                                    ({avgData.percentage}%)
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-white" style={{ opacity: 0.5 }}>-</span>
+                              );
+                            })()}
+                          </td>
+                          {sportsbooks.map(book => {
+                            const odds = nominee.odds?.[book.key];
+                            return (
+                              <td key={book.key} className={`px-4 py-3 text-center ${book.bgColor}`}>
+                                {odds ? (
+                                  <span className={`font-semibold ${book.textColor}`}>
+                                    {odds}
+                                  </span>
+                                ) : (
+                                  <span className={book.textColor} style={{ opacity: 0.5 }}>-</span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="mt-6 text-sm text-white text-center">
+              Odds displayed in American format • Updates in real-time
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<GoldenGlobes />, document.getElementById('root'));
+  </script>
+</body>
+</html>
