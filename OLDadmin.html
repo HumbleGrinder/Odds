@@ -3,26 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Golden Globes</title>
-  
-  <!-- Firebase CDN Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAcJTHkUYTW1zd7PSAHJ6ZpGCxI69CDDaE",
-      authDomain: "odds-32154.firebaseapp.com",
-      databaseURL: "https://odds-32154-default-rtdb.firebaseio.com",
-      projectId: "odds-32154",
-      storageBucket: "odds-32154.firebasestorage.app",
-      messagingSenderId: "239351340320",
-      appId: "1:239351340320:web:88f4473d0ec8801ed4cb45"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-  
+  <title>ADMIN</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -35,6 +16,7 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
+    // Lucide icons
     const Lock = () => <i data-lucide="lock"></i>;
     const Plus = () => <i data-lucide="plus"></i>;
     const Trash2 = () => <i data-lucide="trash-2"></i>;
@@ -46,23 +28,8 @@
       const [loading, setLoading] = useState(true);
       const [editingCell, setEditingCell] = useState(null);
       const [tempValue, setTempValue] = useState('');
-      const [selectedCategory, setSelectedCategory] = useState('best-drama');
-      const [firebaseAuth, setFirebaseAuth] = useState(null);
 
       const ADMIN_PASSWORD = 'admin123';
-
-      const categories = [
-        { key: 'best-drama', label: 'Best Motion Picture - Drama' },
-        { key: 'best-comedy', label: 'Best Motion Picture - Musical or Comedy' },
-        { key: 'best-director', label: 'Best Director' },
-        { key: 'best-actor-drama', label: 'Best Actor - Drama' },
-        { key: 'best-actress-drama', label: 'Best Actress - Drama' },
-        { key: 'best-actor-comedy', label: 'Best Actor - Musical or Comedy' },
-        { key: 'best-actress-comedy', label: 'Best Actress - Musical or Comedy' },
-        { key: 'best-supporting-actor', label: 'Best Supporting Actor' },
-        { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
-        { key: 'best-screenplay', label: 'Best Screenplay' }
-      ];
       
       const sportsbooks = [
         { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
@@ -86,50 +53,39 @@
         if (isAuthenticated) {
           loadData();
         }
-      }, [isAuthenticated, selectedCategory]);
+      }, [isAuthenticated]);
 
       useEffect(() => {
         lucide.createIcons();
       }, [nominees, isAuthenticated, loading]);
 
       const loadData = () => {
-        setLoading(true);
-        const dbRef = firebase.database().ref(`golden-globes/${selectedCategory}/nominees`);
-        
-        dbRef.on('value', (snapshot) => {
-          const data = snapshot.val();
-          if (data) {
-            setNominees(data);
-          } else {
-            setNominees([]);
-          }
-          setLoading(false);
-        });
-
-        return () => dbRef.off();
-      };
-
-      const saveData = async (updatedNominees) => {
         try {
-          const dbRef = firebase.database().ref(`golden-globes/${selectedCategory}/nominees`);
-          await dbRef.set(updatedNominees);
+          const data = localStorage.getItem('golden-globes-best-drama');
+          if (data) {
+            setNominees(JSON.parse(data));
+          }
         } catch (error) {
-          console.error('Error saving data:', error);
-          alert('Failed to save data: ' + error.message);
+          console.log('No existing data, starting fresh');
+          setNominees([]);
+        } finally {
+          setLoading(false);
         }
       };
 
-      const handleLogin = async () => {
+      const saveData = (updatedNominees) => {
+        try {
+          localStorage.setItem('golden-globes-best-drama', JSON.stringify(updatedNominees));
+          setNominees(updatedNominees);
+        } catch (error) {
+          console.error('Error saving data:', error);
+          alert('Failed to save data. Please try again.');
+        }
+      };
+
+      const handleLogin = () => {
         if (password === ADMIN_PASSWORD) {
-          try {
-            // Sign in anonymously to Firebase (enables write access)
-            const userCredential = await firebase.auth().signInAnonymously();
-            setFirebaseAuth(userCredential.user);
-            setIsAuthenticated(true);
-          } catch (error) {
-            console.error('Firebase auth error:', error);
-            alert('Authentication failed: ' + error.message);
-          }
+          setIsAuthenticated(true);
         } else {
           alert('Incorrect password');
         }
@@ -232,10 +188,7 @@
         if (probs.length === 0) return null;
         
         const avgProb = probs.reduce((sum, p) => sum + p, 0) / probs.length;
-        return {
-          odds: probToAmericanOdds(avgProb),
-          percentage: Math.round(avgProb * 100)
-        };
+        return probToAmericanOdds(avgProb);
       };
 
       const getTimeAgo = (dateString) => {
@@ -249,8 +202,6 @@
         if (diffDays === 1) return '1 day ago';
         return `${diffDays} days ago`;
       };
-
-      const currentCategory = categories.find(c => c.key === selectedCategory);
 
       if (!isAuthenticated) {
         return (
@@ -300,7 +251,7 @@
               <div>
                 <a href="index.html" className="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">← Back to Home</a>
                 <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-                <p className="text-gray-600">Golden Globes 2025</p>
+                <p className="text-gray-600">Golden Globes - Best Motion Picture Drama</p>
               </div>
               <button
                 onClick={addNominee}
@@ -311,22 +262,6 @@
               </button>
             </div>
 
-            {/* Category Dropdown */}
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Select Category:
-              </label>
-              <select 
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-white border-2 border-gray-300 rounded-lg px-4 py-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {categories.map(cat => (
-                  <option key={cat.key} value={cat.key}>{cat.label}</option>
-                ))}
-              </select>
-            </div>
-
             <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -335,14 +270,14 @@
                       <th className="px-4 py-3 text-left text-sm font-semibold">Nominee</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold">Thumbnail URL</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold">Last Updated</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold whitespace-nowrap bg-purple-600 text-white">
-                        Average Odds
-                      </th>
                       {sportsbooks.map(book => (
                         <th key={book.key} className={`px-4 py-3 text-center text-sm font-semibold whitespace-nowrap ${book.bgColor} ${book.textColor}`}>
                           {book.label}
                         </th>
                       ))}
+                      <th className="px-4 py-3 text-center text-sm font-semibold whitespace-nowrap bg-purple-600 text-white">
+                        Average Odds
+                      </th>
                       <th className="px-4 py-3 text-center text-sm font-semibold">Actions</th>
                     </tr>
                   </thead>
@@ -405,23 +340,6 @@
                           <td className="px-4 py-3 text-sm text-gray-600">
                             {getTimeAgo(nominee.lastUpdated)}
                           </td>
-                          <td className="px-4 py-3 text-center bg-purple-600">
-                            {(() => {
-                              const avgData = calculateAverageOdds(nominee);
-                              return avgData ? (
-                                <div className="flex flex-col items-center">
-                                  <span className="font-bold text-white">
-                                    {avgData.odds > 0 ? '+' : ''}{avgData.odds}
-                                  </span>
-                                  <span className="text-xs text-white opacity-75">
-                                    ({avgData.percentage}%)
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-white" style={{ opacity: 0.5 }}>-</span>
-                              );
-                            })()}
-                          </td>
                           {sportsbooks.map(book => {
                             const odds = nominee.odds?.[book.key];
                             return (
@@ -457,6 +375,18 @@
                               </td>
                             );
                           })}
+                          <td className="px-4 py-3 text-center bg-purple-600">
+                            {(() => {
+                              const avgOdds = calculateAverageOdds(nominee);
+                              return avgOdds ? (
+                                <span className="font-bold text-white">
+                                  {avgOdds > 0 ? '+' : ''}{avgOdds}
+                                </span>
+                              ) : (
+                                <span className="text-white" style={{ opacity: 0.5 }}>-</span>
+                              );
+                            })()}
+                          </td>
                           <td className="px-4 py-3 text-center">
                             <button
                               onClick={() => removeNominee(nominee.id)}
@@ -477,10 +407,10 @@
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
               <p className="font-semibold mb-2">💡 How to use:</p>
               <ul className="list-disc list-inside space-y-1">
-                <li>Select a category from the dropdown above</li>
-                <li>Click any cell to edit it (press Enter to save, Escape to cancel)</li>
+                <li>Click any cell to edit it</li>
+                <li>Press Enter to save, Escape to cancel</li>
                 <li>Odds format: -130 for favorites, +250 for underdogs</li>
-                <li>Changes save automatically to Firebase and appear on the public page instantly</li>
+                <li>Last Updated automatically updates when you change odds</li>
                 <li>Click the trash icon to delete a nominee</li>
               </ul>
             </div>
