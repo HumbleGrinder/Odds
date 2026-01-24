@@ -47,36 +47,83 @@
       const [editingCell, setEditingCell] = useState(null);
       const [tempValue, setTempValue] = useState('');
       const [selectedCategory, setSelectedCategory] = useState('best-drama');
+      const [selectedEvent, setSelectedEvent] = useState('golden-globes');
       const [firebaseAuth, setFirebaseAuth] = useState(null);
 
       const ADMIN_PASSWORD = 'admin123';
 
-      const categories = [
-        { key: 'best-drama', label: 'Best Motion Picture - Drama' },
-        { key: 'best-comedy', label: 'Best Motion Picture - Musical or Comedy' },
-        { key: 'best-director', label: 'Best Director' },
-        { key: 'best-actor-drama', label: 'Best Actor - Drama' },
-        { key: 'best-actress-drama', label: 'Best Actress - Drama' },
-        { key: 'best-actor-comedy', label: 'Best Actor - Musical or Comedy' },
-        { key: 'best-actress-comedy', label: 'Best Actress - Musical or Comedy' },
-        { key: 'best-supporting-actor', label: 'Best Supporting Actor' },
-        { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
-        { key: 'best-screenplay', label: 'Best Screenplay' }
+      const events = [
+        { key: 'golden-globes', label: 'Golden Globes' },
+        { key: 'grammys', label: 'Grammys' }
+        // { key: 'oscars', label: 'Oscars' }
       ];
+
+      const categoriesByEvent = {
+        'golden-globes': [
+          { key: 'best-drama', label: 'Best Motion Picture - Drama' },
+          { key: 'best-comedy', label: 'Best Motion Picture - Musical or Comedy' },
+          { key: 'best-director', label: 'Best Director' },
+          { key: 'best-actor-drama', label: 'Best Actor - Drama' },
+          { key: 'best-actress-drama', label: 'Best Actress - Drama' },
+          { key: 'best-actor-comedy', label: 'Best Actor - Musical or Comedy' },
+          { key: 'best-actress-comedy', label: 'Best Actress - Musical or Comedy' },
+          { key: 'best-supporting-actor', label: 'Best Supporting Actor' },
+          { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
+          { key: 'best-screenplay', label: 'Best Screenplay' }
+        ],
+        'grammys': [
+          { key: 'album-of-the-year', label: 'Album of the Year' },
+          { key: 'song-of-the-year', label: 'Song of the Year' },
+          { key: 'record-of-the-year', label: 'Record of the Year' },
+          { key: 'new-artist-of-the-year', label: 'New Artist of the Year' },
+          { key: 'solo-pop-record', label: 'Solo Pop Record of the Year' }
+        ],
+        // 'oscars': [
+        //   { key: 'best-picture', label: 'Best Picture' },
+        //   { key: 'best-director', label: 'Best Director' },
+        //   { key: 'best-actor', label: 'Best Actor' },
+        //   { key: 'best-actress', label: 'Best Actress' },
+        //   { key: 'best-supporting-actor', label: 'Best Supporting Actor' },
+        //   { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
+        //   { key: 'best-casting', label: 'Best Casting' },
+        //   { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
+        //   { key: 'best-original-screenplay', label: 'Best Original Screenplay' },
+        //   { key: 'best-adapted-screenplay', label: 'Best Adapted Screenplay' },
+        //   { key: 'best-animated-feature', label: 'Best Animated Feature Film' },
+        //   { key: 'best-documentary', label: 'Best Documentary Feature' }
+        // ]
+      };
+
+      const categories = categoriesByEvent[selectedEvent];
       
-      const sportsbooks = [
-        { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
-        { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
-        { key: 'scorebet', label: 'ScoreBet', bgColor: 'bg-blue-900', textColor: 'text-white' },
-        { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
-        { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
-        { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' },
-        { key: 'bet365', label: 'Bet365', bgColor: 'bg-green-500', textColor: 'text-yellow-400' },
-        { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
-        { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' },
-        { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
-        { key: 'bovada', label: 'Bovada', bgColor: 'bg-gray-400', textColor: 'text-red-600' }
-      ];
+      const sportsbooksByEvent = {
+        'golden-globes': [
+          { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
+          { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
+          { key: 'scorebet', label: 'ScoreBet', bgColor: 'bg-blue-900', textColor: 'text-white' },
+          { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
+          { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
+          { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' },
+          { key: 'bet365', label: 'Bet365', bgColor: 'bg-green-500', textColor: 'text-yellow-400' },
+          { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
+          { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' },
+          { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
+          { key: 'bovada', label: 'Bovada', bgColor: 'bg-gray-400', textColor: 'text-red-600' }
+        ],
+        'grammys': [
+          { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
+          { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
+          { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
+          { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
+          { key: 'bookmaker', label: 'Bookmaker', bgColor: 'bg-purple-600', textColor: 'text-white' },
+          { key: 'thescore', label: 'theScore', bgColor: 'bg-red-600', textColor: 'text-white' },
+          { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
+          { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
+          { key: 'bet99', label: 'Bet99', bgColor: 'bg-teal-600', textColor: 'text-white' }
+        ]
+      };
+
+      const sportsbooks = sportsbooksByEvent[selectedEvent];
 
       useEffect(() => {
         lucide.createIcons();
@@ -86,7 +133,12 @@
         if (isAuthenticated) {
           loadData();
         }
-      }, [isAuthenticated, selectedCategory]);
+      }, [isAuthenticated, selectedEvent, selectedCategory]);
+
+      useEffect(() => {
+        // Reset category when event changes
+        setSelectedCategory(categoriesByEvent[selectedEvent][0].key);
+      }, [selectedEvent]);
 
       useEffect(() => {
         lucide.createIcons();
@@ -94,7 +146,7 @@
 
       const loadData = () => {
         setLoading(true);
-        const dbRef = firebase.database().ref(`golden-globes/${selectedCategory}/nominees`);
+        const dbRef = firebase.database().ref(`${selectedEvent}/${selectedCategory}/nominees`);
         
         dbRef.on('value', (snapshot) => {
           const data = snapshot.val();
@@ -111,7 +163,7 @@
 
       const saveData = async (updatedNominees) => {
         try {
-          const dbRef = firebase.database().ref(`golden-globes/${selectedCategory}/nominees`);
+          const dbRef = firebase.database().ref(`${selectedEvent}/${selectedCategory}/nominees`);
           await dbRef.set(updatedNominees);
         } catch (error) {
           console.error('Error saving data:', error);
@@ -297,7 +349,7 @@
               <div>
                 <a href="index.html" className="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">← Back to Home</a>
                 <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-                <p className="text-gray-600">Golden Globes 2025</p>
+                <p className="text-gray-600">{events.find(e => e.key === selectedEvent).label} 2025</p>
               </div>
               <button
                 onClick={addNominee}
@@ -306,6 +358,22 @@
                 <Plus />
                 Add Nominee
               </button>
+            </div>
+
+            {/* Event Dropdown */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Select Event:
+              </label>
+              <select 
+                value={selectedEvent}
+                onChange={(e) => setSelectedEvent(e.target.value)}
+                className="bg-white border-2 border-gray-300 rounded-lg px-4 py-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {events.map(event => (
+                  <option key={event.key} value={event.key}>{event.label}</option>
+                ))}
+              </select>
             </div>
 
             {/* Category Dropdown */}
