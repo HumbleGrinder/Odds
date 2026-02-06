@@ -54,8 +54,8 @@
 
       const events = [
         { key: 'golden-globes', label: 'Golden Globes' },
-        { key: 'grammys', label: 'Grammys' }
-        // { key: 'oscars', label: 'Oscars' }
+        { key: 'grammys', label: 'Grammys' },
+        { key: 'oscars', label: 'Oscars' }
       ];
 
       const categoriesByEvent = {
@@ -78,20 +78,27 @@
           { key: 'new-artist-of-the-year', label: 'New Artist of the Year' },
           { key: 'solo-pop-record', label: 'Solo Pop Record of the Year' }
         ],
-        // 'oscars': [
-        //   { key: 'best-picture', label: 'Best Picture' },
-        //   { key: 'best-director', label: 'Best Director' },
-        //   { key: 'best-actor', label: 'Best Actor' },
-        //   { key: 'best-actress', label: 'Best Actress' },
-        //   { key: 'best-supporting-actor', label: 'Best Supporting Actor' },
-        //   { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
-        //   { key: 'best-casting', label: 'Best Casting' },
-        //   { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
-        //   { key: 'best-original-screenplay', label: 'Best Original Screenplay' },
-        //   { key: 'best-adapted-screenplay', label: 'Best Adapted Screenplay' },
-        //   { key: 'best-animated-feature', label: 'Best Animated Feature Film' },
-        //   { key: 'best-documentary', label: 'Best Documentary Feature' }
-        // ]
+        'oscars': [
+        { key: 'picture', label: 'Best Picture' },
+        { key: 'director', label: 'Best Director' },
+        { key: 'actor', label: 'Best Actor' },
+        { key: 'actress', label: 'Best Actress' },
+        { key: 'supporting-actor', label: 'Best Supporting Actor' },
+        { key: 'supporting-actress', label: 'Best Supporting Actress' },
+        { key: 'original', label: 'Best Original Screenplay' },
+        { key: 'adapted', label: 'Best Adapted Screenplay' },
+        { key: 'casting', label: 'Best Casting' },
+        { key: 'international', label: 'Best International Feature Film' },
+        { key: 'documentary', label: 'Best Documentary Feature' },
+        { key: 'animated', label: 'Best Animated Feature Film' },
+        { key: 'cinemato', label: 'Best Cinematography' },
+        { key: 'editing', label: 'Best Editing' },
+        { key: 'sound', label: 'Best Sound' },
+        { key: 'score', label: 'Best Original Score' },
+        { key: 'production', label: 'Best Production Design' },
+        { key: 'song', label: 'Best Song' },
+        { key: 'costumes', label: 'Best Costumes' }
+      ]
       };
 
       const categories = categoriesByEvent[selectedEvent];
