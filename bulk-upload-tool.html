@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk Upload - Awards Odds</title>
+  
+  <!-- Firebase CDN Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAcJTHkUYTW1zd7PSAHJ6ZpGCxI69CDDaE",
+      authDomain: "odds-32154.firebaseapp.com",
+      databaseURL: "https://odds-32154-default-rtdb.firebaseio.com",
+      projectId: "odds-32154",
+      storageBucket: "odds-32154.firebasestorage.app",
+      messagingSenderId: "239351340320",
+      appId: "1:239351340320:web:88f4473d0ec8801ed4cb45"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen py-8 px-4">
+  <div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">📊 Bulk Upload Tool</h1>
+      <p class="text-gray-600 mb-6">Upload odds data from your Excel/CSV file to Firebase</p>
+
+      <!-- Step 1: Select Award & Category -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-3">Step 1: Select Destination</h2>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Award Show</label>
+            <select id="awardSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+              <option value="grammys">Grammys</option>
+              <option value="oscars">Oscars</option>
+              <option value="golden-globes">Golden Globes</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <select id="categorySelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: CSV Format Instructions -->
+      <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h2 class="text-xl font-semibold mb-3">Step 2: CSV Format</h2>
+        <p class="text-sm text-gray-700 mb-2">Your CSV should have these columns (in order):</p>
+        <code class="block bg-white p-2 rounded text-xs overflow-x-auto mb-2">
+          name,thumbnail,polymarket,fanduel,draftkings,betonline,bookmaker,thescore,betano,kambi,bet99,betmgm,pointsbet
+        </code>
+        <p class="text-sm text-gray-700 mb-2">Example rows:</p>
+        <code class="block bg-white p-2 rounded text-xs overflow-x-auto">
+          Beyoncé - Cowboy Carter,images/beyonce.jpg,-450,-400,-500,-420,-480,-410,-460,-440,-470,-430,-455
+          Taylor Swift - TTPD,,+300,+280,+320,+310,+340,+290,+315,+305,+325,+308,+318
+        </code>
+        <p class="text-xs text-gray-600 mt-2">💡 Thumbnail can be empty if you don't have images yet</p>
+      </div>
+
+      <!-- Step 3: Paste CSV Data -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-3">Step 3: Paste CSV Data</h2>
+        <textarea 
+          id="csvData" 
+          rows="12" 
+          placeholder="Paste your CSV data here (including header row)..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+        ></textarea>
+      </div>
+
+      <!-- Preview Section -->
+      <div id="previewSection" class="mb-6 hidden">
+        <h2 class="text-xl font-semibold mb-3">Preview (First 3 rows):</h2>
+        <div id="previewTable" class="overflow-x-auto bg-gray-50 p-4 rounded-lg"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-4">
+        <button 
+          onclick="previewData()"
+          class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+        >
+          Preview Data
+        </button>
+        
+        <button 
+          onclick="uploadToFirebase()"
+          class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold"
+        >
+          Upload to Firebase
+        </button>
+        
+        <button 
+          onclick="clearForm()"
+          class="px-6 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition font-semibold"
+        >
+          Clear
+        </button>
+      </div>
+
+      <!-- Status Messages -->
+      <div id="statusMessage" class="mt-6"></div>
+    </div>
+
+    <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <p class="text-sm text-yellow-800">
+        ⚠️ <strong>Warning:</strong> This will REPLACE all existing data for the selected category. Make sure you have the correct award and category selected!
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const categories = {
+      'grammys': [
+        { key: 'album-of-the-year', label: 'Album of the Year' },
+        { key: 'song-of-the-year', label: 'Song of the Year' },
+        { key: 'record-of-the-year', label: 'Record of the Year' },
+        { key: 'new-artist-of-the-year', label: 'New Artist of the Year' },
+        { key: 'solo-pop-record', label: 'Solo Pop Record of the Year' }
+      ],
+      'oscars': [
+        { key: 'picture', label: 'Best Picture' },
+        { key: 'director', label: 'Best Director' },
+        { key: 'actor', label: 'Best Actor' },
+        { key: 'actress', label: 'Best Actress' },
+        { key: 'supporting-actor', label: 'Best Supporting Actor' },
+        { key: 'supporting-actress', label: 'Best Supporting Actress' },
+        { key: 'original', label: 'Best Original Screenplay' },
+        { key: 'adapted', label: 'Best Adapted Screenplay' },
+        { key: 'casting', label: 'Best Casting' },
+        { key: 'international', label: 'Best International Feature Film' },
+        { key: 'documentary', label: 'Best Documentary Feature' },
+        { key: 'animated', label: 'Best Animated Feature Film' },
+        { key: 'cinemato', label: 'Best Cinematography' },
+        { key: 'editing', label: 'Best Editing' },
+        { key: 'sound', label: 'Best Sound' },
+        { key: 'score', label: 'Best Original Score' },
+        { key: 'production', label: 'Best Production Design' },
+        { key: 'song', label: 'Best Song' },
+        { key: 'costumes', label: 'Best Costumes' }
+      ]
+    };
+
+    // Populate categories on load
+    document.getElementById('awardSelect').addEventListener('change', updateCategories);
+    updateCategories();
+
+    function updateCategories() {
+      const award = document.getElementById('awardSelect').value;
+      const categorySelect = document.getElementById('categorySelect');
+      categorySelect.innerHTML = '';
+      
+      categories[award].forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.key;
+        option.textContent = cat.label;
+        categorySelect.appendChild(option);
+      });
+    }
+
+    function parseCSV(csv) {
+      const lines = csv.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      const data = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index] ? values[index].trim() : '';
+        });
+        data.push(row);
+      }
+
+      return { headers, data };
+    }
+
+    function csvToFirebaseFormat(csvData) {
+      const nominees = csvData.data.map((row, index) => {
+        return {
+          id: Date.now().toString() + '_' + index,
+          name: row.name || 'Unnamed',
+          thumbnail: row.thumbnail || '',
+          lastUpdated: new Date().toISOString().split('T')[0],
+          odds: {
+            polymarket: row.polymarket || '',
+            fanduel: row.fanduel || '',
+            draftkings: row.draftkings || '',
+            betonline: row.betonline || '',
+            bookmaker: row.bookmaker || '',
+            thescore: row.thescore || '',
+            betano: row.betano || '',
+            kambi: row.kambi || '',
+            bet99: row.bet99 || '',
+            betmgm: row.betmgm || '',
+            pointsbet: row.pointsbet || ''
+          }
+        };
+      });
+
+      return nominees;
+    }
+
+    function previewData() {
+      const csvText = document.getElementById('csvData').value;
+      
+      if (!csvText.trim()) {
+        showMessage('Please paste CSV data first!', 'error');
+        return;
+      }
+
+      try {
+        const parsed = parseCSV(csvText);
+        const nominees = csvToFirebaseFormat(parsed);
+        
+        const previewSection = document.getElementById('previewSection');
+        const previewTable = document.getElementById('previewTable');
+        
+        let html = '<table class="min-w-full text-sm"><thead class="bg-gray-200"><tr>';
+        html += '<th class="px-2 py-1 text-left">Name</th>';
+        html += '<th class="px-2 py-1 text-left">Polymarket</th>';
+        html += '<th class="px-2 py-1 text-left">FanDuel</th>';
+        html += '<th class="px-2 py-1 text-left">DraftKings</th>';
+        html += '</tr></thead><tbody>';
+        
+        nominees.slice(0, 3).forEach(nominee => {
+          html += '<tr class="border-t">';
+          html += `<td class="px-2 py-1">${nominee.name}</td>`;
+          html += `<td class="px-2 py-1">${nominee.odds.polymarket || '-'}</td>`;
+          html += `<td class="px-2 py-1">${nominee.odds.fanduel || '-'}</td>`;
+          html += `<td class="px-2 py-1">${nominee.odds.draftkings || '-'}</td>`;
+          html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        html += `<p class="text-xs text-gray-600 mt-2">Showing 3 of ${nominees.length} rows</p>`;
+        
+        previewTable.innerHTML = html;
+        previewSection.classList.remove('hidden');
+        
+        showMessage(`Preview loaded: ${nominees.length} nominees`, 'success');
+      } catch (error) {
+        showMessage('Error parsing CSV: ' + error.message, 'error');
+      }
+    }
+
+    async function uploadToFirebase() {
+      const csvText = document.getElementById('csvData').value;
+      const award = document.getElementById('awardSelect').value;
+      const category = document.getElementById('categorySelect').value;
+      
+      if (!csvText.trim()) {
+        showMessage('Please paste CSV data first!', 'error');
+        return;
+      }
+
+      if (!confirm(`This will REPLACE all data for ${award} - ${category}. Are you sure?`)) {
+        return;
+      }
+
+      try {
+        showMessage('Uploading to Firebase...', 'info');
+        
+        const parsed = parseCSV(csvText);
+        const nominees = csvToFirebaseFormat(parsed);
+        
+        // Authenticate anonymously
+        await firebase.auth().signInAnonymously();
+        
+        // Upload to Firebase
+        const dbRef = firebase.database().ref(`${award}/${category}/nominees`);
+        await dbRef.set(nominees);
+        
+        showMessage(`✅ Success! Uploaded ${nominees.length} nominees to ${award}/${category}`, 'success');
+        
+        // Clear form after 3 seconds
+        setTimeout(() => {
+          clearForm();
+        }, 3000);
+        
+      } catch (error) {
+        showMessage('❌ Upload failed: ' + error.message, 'error');
+      }
+    }
+
+    function clearForm() {
+      document.getElementById('csvData').value = '';
+      document.getElementById('previewSection').classList.add('hidden');
+      document.getElementById('statusMessage').innerHTML = '';
+    }
+
+    function showMessage(message, type) {
+      const statusDiv = document.getElementById('statusMessage');
+      const colors = {
+        success: 'bg-green-100 border-green-400 text-green-700',
+        error: 'bg-red-100 border-red-400 text-red-700',
+        info: 'bg-blue-100 border-blue-400 text-blue-700'
+      };
+      
+      statusDiv.innerHTML = `
+        <div class="${colors[type]} border px-4 py-3 rounded">
+          ${message}
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
