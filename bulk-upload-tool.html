@@ -59,7 +59,7 @@
         <h2 class="text-xl font-semibold mb-3">Step 2: CSV Format</h2>
         <p class="text-sm text-gray-700 mb-2">Your CSV should have these columns (in order):</p>
         <code class="block bg-white p-2 rounded text-xs overflow-x-auto mb-2">
-          name,thumbnail,polymarket,fanduel,draftkings,betonline,bookmaker,thescore,betano,kambi,bet99,betmgm,pointsbet
+          name,thumbnail,polymarket,fanduel,draftkings,betonline,bookmaker,thescore,betano,kambi,betmgm,pointsbet
         </code>
         <p class="text-sm text-gray-700 mb-2">Example rows:</p>
         <code class="block bg-white p-2 rounded text-xs overflow-x-auto">
@@ -202,10 +202,9 @@
             bookmaker: row.bookmaker || '',
             thescore: row.thescore || '',
             betano: row.betano || '',
+            pointsbet: row.pointsbet || '',
             kambi: row.kambi || '',
-            bet99: row.bet99 || '',
-            betmgm: row.betmgm || '',
-            pointsbet: row.pointsbet || ''
+            betmgm: row.betmgm || ''
           }
         };
       });
