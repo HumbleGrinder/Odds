@@ -44,13 +44,18 @@ async function fetchPolymarketData(slug) {
       return [];
     }
     
-    const event = data[0];
-    const nominees = event.markets.map(market => ({
-      name: market.groupItemTitle,
-      probability: market.outcomePrices[0], // First outcome is "Yes" (win)
-      odds: probToAmericanOdds(market.outcomePrices[0])
-    }));
-    
+    const nominees = event.markets.map(market => {
+      // Parse outcomePrices - it's a JSON string like "[\"0.745\", \"0.255\"]"
+      const prices = JSON.parse(market.outcomePrices);
+      const probability = prices[0]; // First outcome is "Yes" (will win)
+      
+      return {
+        name: market.groupItemTitle,
+        probability: probability,
+        odds: probToAmericanOdds(probability)
+      };
+    }).filter(n => n.name); // Filter out entries without names (like "Movie D", "Other")
+        
     return nominees;
   } catch (error) {
     console.error(`Error fetching ${slug}:`, error.message);
