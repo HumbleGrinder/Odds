@@ -39,10 +39,23 @@ async function fetchPolymarketData(slug) {
     const response = await fetch(url);
     const data = await response.json();
     
-    if (!data || data.length === 0) {
+    // Handle both response formats: direct array or { value: [...] }
+    let events;
+    if (Array.isArray(data)) {
+      events = data;
+    } else if (data.value && Array.isArray(data.value)) {
+      events = data.value;
+    } else {
+      console.log(`Unexpected response format for ${slug}`);
+      return [];
+    }
+    
+    if (!events || events.length === 0) {
       console.log(`No data found for ${slug}`);
       return [];
     }
+    
+    const event = events[0];
     
     const nominees = event.markets.map(market => {
       // Parse outcomePrices - it's a JSON string like "[\"0.745\", \"0.255\"]"
