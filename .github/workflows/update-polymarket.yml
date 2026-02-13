@@ -1,0 +1,33 @@
+name: Update Polymarket Odds
+
+on:
+  schedule:
+    # Runs daily at 11:59 AM EST (16:59 UTC)
+    - cron: '59 16 * * *'
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  update-odds:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm install node-fetch@2 firebase-admin
+      
+      - name: Run update script
+        env:
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+        run: node scripts/update-polymarket.js
+      
+      - name: Log completion
+        run: echo "Polymarket odds updated successfully at $(date)"
