@@ -57,17 +57,44 @@ async function fetchCategory(slug, firebasePath) {
       return null;
     }
     
+    // Log first market to see structure
+    if (event.markets.length > 0) {
+      const sample = event.markets[0];
+      console.log(`  Debug - Sample market keys:`, Object.keys(sample).join(', '));
+      console.log(`  Debug - groupItemTitle:`, sample.groupItemTitle);
+      console.log(`  Debug - outcomePrices type:`, typeof sample.outcomePrices);
+      console.log(`  Debug - outcomePrices value:`, sample.outcomePrices);
+    }
+    
     // Extract nominees
-    const nominees = event.markets.map(market => {
-      const prices = JSON.parse(market.outcomePrices);
-      const probability = parseFloat(prices[0]);
-      
-      return {
-        name: market.groupItemTitle,
-        probability: probability,
-        odds: probToAmericanOdds(probability)
-      };
-    }).filter(n => n.name && !n.name.match(/^(Other|Film [A-Z])$/i));
+    const nominees = [];
+    for (const market of event.markets) {
+      try {
+        // Handle different possible formats
+        let prices;
+        if (typeof market.outcomePrices === 'string') {
+          prices = JSON.parse(market.outcomePrices);
+        } else if (Array.isArray(market.outcomePrices)) {
+          prices = market.outcomePrices;
+        } else {
+          console.log(`  ⚠ Skipping market - no outcomePrices:`, market.groupItemTitle);
+          continue;
+        }
+        
+        const probability = parseFloat(prices[0]);
+        const name = market.groupItemTitle;
+        
+        if (name && !name.match(/^(Other|Film [A-Z])$/i)) {
+          nominees.push({
+            name: name,
+            probability: probability,
+            odds: probToAmericanOdds(probability)
+          });
+        }
+      } catch (error) {
+        console.log(`  ⚠ Error parsing market:`, error.message);
+      }
+    }
     
     console.log(`  ✓ Found ${nominees.length} nominees:`);
     nominees.forEach(n => {
