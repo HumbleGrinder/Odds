@@ -71,7 +71,7 @@ async function updateCategory(slug, firebasePath, categoryName) {
   const polymarketNominees = await fetchPolymarketData(slug);
   
   if (polymarketNominees.length === 0) {
-    console.log(`  ✗ No Polymarket data found`);
+    console.log(`  - No Polymarket data (market may not exist)`);
     return;
   }
   
@@ -123,17 +123,43 @@ async function main() {
   console.log(`Time: ${new Date().toISOString()}\n`);
   
   const categories = [
-    { slug: 'oscars-2026-best-picture-winner', path: 'oscars/picture', name: 'Best Picture' },
-    { slug: 'oscars-2026-best-director-winner', path: 'oscars/director', name: 'Best Director' },
+    // Acting categories
     { slug: 'oscars-2026-best-actor-winner', path: 'oscars/actor', name: 'Best Actor' },
     { slug: 'oscars-2026-best-actress-winner', path: 'oscars/actress', name: 'Best Actress' },
     { slug: 'oscars-2026-best-supporting-actor-winner', path: 'oscars/supporting-actor', name: 'Best Supporting Actor' },
-    { slug: 'oscars-2026-best-supporting-actress-winner', path: 'oscars/supporting-actress', name: 'Best Supporting Actress' }
+    { slug: 'oscars-2026-best-supporting-actress-winner', path: 'oscars/supporting-actress', name: 'Best Supporting Actress' },
+    
+    // Main categories
+    { slug: 'oscars-2026-best-picture-winner', path: 'oscars/picture', name: 'Best Picture' },
+    { slug: 'oscars-2026-best-director-winner', path: 'oscars/director', name: 'Best Director' },
+    
+    // Writing categories
+    { slug: 'oscars-2026-best-adapted-screenplay-winner', path: 'oscars/adapted', name: 'Best Adapted Screenplay' },
+    { slug: 'oscars-2026-best-original-screenplay-winner', path: 'oscars/original', name: 'Best Original Screenplay' },
+    
+    // Technical categories
+    { slug: 'oscars-2026-best-cinematography-winner', path: 'oscars/cinemato', name: 'Best Cinematography' },
+    { slug: 'oscars-2026-best-film-editing-winner', path: 'oscars/editing', name: 'Best Film Editing' },
+    { slug: 'oscars-2026-best-production-design-winner', path: 'oscars/production', name: 'Best Production Design' },
+    { slug: 'oscars-2026-best-costume-design-winner', path: 'oscars/costumes', name: 'Best Costume Design' },
+    { slug: 'oscars-2026-best-sound-winner', path: 'oscars/sound', name: 'Best Sound' },
+    
+    // Music categories
+    { slug: 'oscars-2026-best-original-score-winner', path: 'oscars/score', name: 'Best Original Score' },
+    { slug: 'oscars-2026-best-original-song-winner', path: 'oscars/song', name: 'Best Original Song' },
+    
+    // Other film categories
+    { slug: 'oscars-2026-best-animated-feature-winner', path: 'oscars/animated', name: 'Best Animated Feature' },
+    { slug: 'oscars-2026-best-documentary-feature-winner', path: 'oscars/documentary', name: 'Best Documentary Feature' },
+    { slug: 'oscars-2026-best-international-feature-film-winner', path: 'oscars/international', name: 'Best International Feature Film' },
+    
+    // Casting (may not exist on Polymarket)
+    { slug: 'oscars-2026-best-casting-winner', path: 'oscars/casting', name: 'Best Casting' }
   ];
   
   for (const category of categories) {
     await updateCategory(category.slug, category.path, category.name);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay between requests
   }
   
   console.log('\n=== Update Complete ===');
