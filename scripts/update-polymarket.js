@@ -149,8 +149,8 @@ async function main() {
     { slug: 'oscars-2026-best-original-song-winner', path: 'oscars/song', name: 'Best Original Song' },
     
     // Other film categories
-    { slug: 'oscars-2026-best-animated-feature-winner', path: 'oscars/animated', name: 'Best Animated Feature' },
-    { slug: 'oscars-2026-best-documentary-feature-winner', path: 'oscars/documentary', name: 'Best Documentary Feature' },
+    { slug: 'oscars-2026-best-animated-feature-film-winner', path: 'oscars/animated', name: 'Best Animated Feature' },
+    { slug: 'oscars-2026-best-documentary-feature-film-winner', path: 'oscars/documentary', name: 'Best Documentary Feature' },
     { slug: 'oscars-2026-best-international-feature-film-winner', path: 'oscars/international', name: 'Best International Feature Film' },
     
     // Casting (may not exist on Polymarket)
