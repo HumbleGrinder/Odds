@@ -39,8 +39,8 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Award Show</label>
             <select id="awardSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-              <option value="grammys">Grammys</option>
               <option value="oscars">Oscars</option>
+              <option value="baftas">BAFTAs</option>
               <option value="golden-globes">Golden Globes</option>
             </select>
           </div>
@@ -123,13 +123,6 @@
 
   <script>
     const categories = {
-      'grammys': [
-        { key: 'album-of-the-year', label: 'Album of the Year' },
-        { key: 'song-of-the-year', label: 'Song of the Year' },
-        { key: 'record-of-the-year', label: 'Record of the Year' },
-        { key: 'new-artist-of-the-year', label: 'New Artist of the Year' },
-        { key: 'solo-pop-record', label: 'Solo Pop Record of the Year' }
-      ],
       'oscars': [
         { key: 'picture', label: 'Best Picture' },
         { key: 'director', label: 'Best Director' },
@@ -140,6 +133,24 @@
         { key: 'original', label: 'Best Original Screenplay' },
         { key: 'adapted', label: 'Best Adapted Screenplay' },
         { key: 'casting', label: 'Best Casting' },
+        { key: 'international', label: 'Best International Feature Film' },
+        { key: 'british', label: 'Best British Film' },
+        { key: 'documentary', label: 'Best Documentary Feature' },
+        { key: 'animated', label: 'Best Animated Film' },
+        { key: 'cinemato', label: 'Best Cinematography' },
+        { key: 'editing', label: 'Best Editing' },
+      ],
+      'baftas': [
+        { key: 'picture', label: 'Best Picture' },
+        { key: 'director', label: 'Best Director' },
+        { key: 'actor', label: 'Best Actor' },
+        { key: 'actress', label: 'Best Actress' },
+        { key: 'supporting-actor', label: 'Best Supporting Actor' },
+        { key: 'supporting-actress', label: 'Best Supporting Actress' },
+        { key: 'original', label: 'Best Original Screenplay' },
+        { key: 'adapted', label: 'Best Adapted Screenplay' },
+        { key: 'casting', label: 'Best Casting' },
+        { key: 'british-film', label: 'Best British Film' },
         { key: 'international', label: 'Best International Feature Film' },
         { key: 'documentary', label: 'Best Documentary Feature' },
         { key: 'animated', label: 'Best Animated Feature Film' },
