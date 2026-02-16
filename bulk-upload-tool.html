@@ -41,7 +41,6 @@
             <select id="awardSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
               <option value="oscars">Oscars</option>
               <option value="baftas">BAFTAs</option>
-              <option value="golden-globes">Golden Globes</option>
             </select>
           </div>
           
@@ -57,16 +56,9 @@
       <!-- Step 2: CSV Format Instructions -->
       <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h2 class="text-xl font-semibold mb-3">Step 2: CSV Format</h2>
-        <p class="text-sm text-gray-700 mb-2">Your CSV should have these columns (in order):</p>
-        <code class="block bg-white p-2 rounded text-xs overflow-x-auto mb-2">
-          name,thumbnail,polymarket,fanduel,draftkings,betonline,bookmaker,thescore,betano,kambi,betmgm,pointsbet
-        </code>
-        <p class="text-sm text-gray-700 mb-2">Example rows:</p>
-        <code class="block bg-white p-2 rounded text-xs overflow-x-auto">
-          Beyoncé - Cowboy Carter,images/beyonce.jpg,-450,-400,-500,-420,-480,-410,-460,-440,-470,-430,-455
-          Taylor Swift - TTPD,,+300,+280,+320,+310,+340,+290,+315,+305,+325,+308,+318
-        </code>
-        <p class="text-xs text-gray-600 mt-2">💡 Thumbnail can be empty if you don't have images yet</p>
+        <div id="csvFormatInstructions">
+          <!-- Populated dynamically based on selected award -->
+        </div>
       </div>
 
       <!-- Step 3: Paste CSV Data -->
@@ -134,11 +126,15 @@
         { key: 'adapted', label: 'Best Adapted Screenplay' },
         { key: 'casting', label: 'Best Casting' },
         { key: 'international', label: 'Best International Feature Film' },
-        { key: 'british', label: 'Best British Film' },
         { key: 'documentary', label: 'Best Documentary Feature' },
-        { key: 'animated', label: 'Best Animated Film' },
+        { key: 'animated', label: 'Best Animated Feature Film' },
         { key: 'cinemato', label: 'Best Cinematography' },
         { key: 'editing', label: 'Best Editing' },
+        { key: 'sound', label: 'Best Sound' },
+        { key: 'score', label: 'Best Original Score' },
+        { key: 'production', label: 'Best Production Design' },
+        { key: 'song', label: 'Best Song' },
+        { key: 'costumes', label: 'Best Costumes' }
       ],
       'baftas': [
         { key: 'picture', label: 'Best Picture' },
@@ -155,18 +151,24 @@
         { key: 'documentary', label: 'Best Documentary Feature' },
         { key: 'animated', label: 'Best Animated Feature Film' },
         { key: 'cinemato', label: 'Best Cinematography' },
-        { key: 'editing', label: 'Best Editing' },
-        { key: 'sound', label: 'Best Sound' },
-        { key: 'score', label: 'Best Original Score' },
-        { key: 'production', label: 'Best Production Design' },
-        { key: 'song', label: 'Best Song' },
-        { key: 'costumes', label: 'Best Costumes' }
+        { key: 'editing', label: 'Best Editing' }
       ]
     };
 
-    // Populate categories on load
-    document.getElementById('awardSelect').addEventListener('change', updateCategories);
+    // Define sportsbooks per award
+    const sportsbooksByAward = {
+      'oscars': ['polymarket', 'fanduel', 'draftkings', 'betonline', 'bookmaker', 'thescore', 'betano', 'kambi', 'betmgm', 'pointsbet'],
+      'baftas': ['polymarket', 'kalshi', 'betonline', 'bet365', 'betano', 'scorebet', 'betmgm']
+    };
+
+    // Populate categories on load and when award changes
+    document.getElementById('awardSelect').addEventListener('change', () => {
+      updateCategories();
+      updateCSVFormatInstructions();
+    });
+    
     updateCategories();
+    updateCSVFormatInstructions();
 
     function updateCategories() {
       const award = document.getElementById('awardSelect').value;
@@ -179,6 +181,29 @@
         option.textContent = cat.label;
         categorySelect.appendChild(option);
       });
+    }
+
+    function updateCSVFormatInstructions() {
+      const award = document.getElementById('awardSelect').value;
+      const sportsbooks = sportsbooksByAward[award];
+      const instructionsDiv = document.getElementById('csvFormatInstructions');
+      
+      const columns = ['name', 'thumbnail', ...sportsbooks].join(',');
+      const exampleName = award === 'oscars' ? 'Conclave' : 'The Brutalist';
+      const exampleName2 = award === 'oscars' ? 'Anora' : 'Conclave';
+      const exampleValues1 = sportsbooks.map((_, i) => i === 0 ? '-450' : (i % 2 === 0 ? '-420' : '-400')).join(',');
+      const exampleValues2 = sportsbooks.map((_, i) => i === 0 ? '+300' : (i % 2 === 0 ? '+310' : '+280')).join(',');
+      
+      instructionsDiv.innerHTML = `
+        <p class="text-sm text-gray-700 mb-2">Your CSV should have these columns (in order):</p>
+        <code class="block bg-white p-2 rounded text-xs overflow-x-auto mb-2">${columns}</code>
+        <p class="text-sm text-gray-700 mb-2">Example rows:</p>
+        <code class="block bg-white p-2 rounded text-xs overflow-x-auto">
+${exampleName},images/${exampleName.toLowerCase()}.jpg,${exampleValues1}
+${exampleName2},,${exampleValues2}
+        </code>
+        <p class="text-xs text-gray-600 mt-2">💡 Thumbnail can be empty if you don't have images yet</p>
+      `;
     }
 
     function parseCSV(csv) {
@@ -199,21 +224,21 @@
     }
 
     function csvToFirebaseFormat(csvData) {
+      const award = document.getElementById('awardSelect').value;
+      const sportsbooks = sportsbooksByAward[award];
+      
       const nominees = csvData.data.map((row, index) => {
+        const odds = {};
+        sportsbooks.forEach(book => {
+          odds[book] = row[book] || '';
+        });
+        
         return {
           id: Date.now().toString() + '_' + index,
           name: row.name || 'Unnamed',
           thumbnail: row.thumbnail || '',
           lastUpdated: new Date().toISOString().split('T')[0],
-          odds: {
-            polymarket: row.polymarket || '',
-            kalshi: row.kalshi || '',
-            betonline: row.betonline || '',
-            bet365: row.bet365 || '',
-            betano: row.betano || '',
-            thescore: row.thescore || '',
-            betmgm: row.betmgm || ''
-          }
+          odds: odds
         };
       });
 
@@ -231,28 +256,30 @@
       try {
         const parsed = parseCSV(csvText);
         const nominees = csvToFirebaseFormat(parsed);
+        const award = document.getElementById('awardSelect').value;
+        const sportsbooks = sportsbooksByAward[award];
         
         const previewSection = document.getElementById('previewSection');
         const previewTable = document.getElementById('previewTable');
         
         let html = '<table class="min-w-full text-sm"><thead class="bg-gray-200"><tr>';
         html += '<th class="px-2 py-1 text-left">Name</th>';
-        html += '<th class="px-2 py-1 text-left">Polymarket</th>';
-        html += '<th class="px-2 py-1 text-left">FanDuel</th>';
-        html += '<th class="px-2 py-1 text-left">DraftKings</th>';
+        sportsbooks.slice(0, 4).forEach(book => {
+          html += `<th class="px-2 py-1 text-left capitalize">${book}</th>`;
+        });
         html += '</tr></thead><tbody>';
         
         nominees.slice(0, 3).forEach(nominee => {
           html += '<tr class="border-t">';
           html += `<td class="px-2 py-1">${nominee.name}</td>`;
-          html += `<td class="px-2 py-1">${nominee.odds.polymarket || '-'}</td>`;
-          html += `<td class="px-2 py-1">${nominee.odds.fanduel || '-'}</td>`;
-          html += `<td class="px-2 py-1">${nominee.odds.draftkings || '-'}</td>`;
+          sportsbooks.slice(0, 4).forEach(book => {
+            html += `<td class="px-2 py-1">${nominee.odds[book] || '-'}</td>`;
+          });
           html += '</tr>';
         });
         
         html += '</tbody></table>';
-        html += `<p class="text-xs text-gray-600 mt-2">Showing 3 of ${nominees.length} rows</p>`;
+        html += `<p class="text-xs text-gray-600 mt-2">Showing 3 of ${nominees.length} rows (first 4 sportsbooks)</p>`;
         
         previewTable.innerHTML = html;
         previewSection.classList.remove('hidden');

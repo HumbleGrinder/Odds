@@ -46,78 +46,62 @@
       const [loading, setLoading] = useState(true);
       const [editingCell, setEditingCell] = useState(null);
       const [tempValue, setTempValue] = useState('');
-      const [selectedCategory, setSelectedCategory] = useState('best-drama');
-      const [selectedEvent, setSelectedEvent] = useState('golden-globes');
+      const [selectedCategory, setSelectedCategory] = useState('picture');
+      const [selectedEvent, setSelectedEvent] = useState('oscars');
       const [firebaseAuth, setFirebaseAuth] = useState(null);
 
       const ADMIN_PASSWORD = 'admin123';
 
       const events = [
-        { key: 'golden-globes', label: 'Golden Globes' },
-        { key: 'grammys', label: 'Grammys' },
-        { key: 'oscars', label: 'Oscars' }
+        { key: 'oscars', label: 'Oscars' },
+        { key: 'baftas', label: 'BAFTAs' }
       ];
 
       const categoriesByEvent = {
-        'golden-globes': [
-          { key: 'best-drama', label: 'Best Motion Picture - Drama' },
-          { key: 'best-comedy', label: 'Best Motion Picture - Musical or Comedy' },
-          { key: 'best-director', label: 'Best Director' },
-          { key: 'best-actor-drama', label: 'Best Actor - Drama' },
-          { key: 'best-actress-drama', label: 'Best Actress - Drama' },
-          { key: 'best-actor-comedy', label: 'Best Actor - Musical or Comedy' },
-          { key: 'best-actress-comedy', label: 'Best Actress - Musical or Comedy' },
-          { key: 'best-supporting-actor', label: 'Best Supporting Actor' },
-          { key: 'best-supporting-actress', label: 'Best Supporting Actress' },
-          { key: 'best-screenplay', label: 'Best Screenplay' }
-        ],
-        'grammys': [
-          { key: 'album-of-the-year', label: 'Album of the Year' },
-          { key: 'song-of-the-year', label: 'Song of the Year' },
-          { key: 'record-of-the-year', label: 'Record of the Year' },
-          { key: 'new-artist-of-the-year', label: 'New Artist of the Year' },
-          { key: 'solo-pop-record', label: 'Solo Pop Record of the Year' }
-        ],
         'oscars': [
-        { key: 'picture', label: 'Best Picture' },
-        { key: 'director', label: 'Best Director' },
-        { key: 'actor', label: 'Best Actor' },
-        { key: 'actress', label: 'Best Actress' },
-        { key: 'supporting-actor', label: 'Best Supporting Actor' },
-        { key: 'supporting-actress', label: 'Best Supporting Actress' },
-        { key: 'original', label: 'Best Original Screenplay' },
-        { key: 'adapted', label: 'Best Adapted Screenplay' },
-        { key: 'casting', label: 'Best Casting' },
-        { key: 'international', label: 'Best International Feature Film' },
-        { key: 'documentary', label: 'Best Documentary Feature' },
-        { key: 'animated', label: 'Best Animated Feature Film' },
-        { key: 'cinemato', label: 'Best Cinematography' },
-        { key: 'editing', label: 'Best Editing' },
-        { key: 'sound', label: 'Best Sound' },
-        { key: 'score', label: 'Best Original Score' },
-        { key: 'production', label: 'Best Production Design' },
-        { key: 'song', label: 'Best Song' },
-        { key: 'costumes', label: 'Best Costumes' }
-      ]
+          { key: 'picture', label: 'Best Picture' },
+          { key: 'director', label: 'Best Director' },
+          { key: 'actor', label: 'Best Actor' },
+          { key: 'actress', label: 'Best Actress' },
+          { key: 'supporting-actor', label: 'Best Supporting Actor' },
+          { key: 'supporting-actress', label: 'Best Supporting Actress' },
+          { key: 'original', label: 'Best Original Screenplay' },
+          { key: 'adapted', label: 'Best Adapted Screenplay' },
+          { key: 'casting', label: 'Best Casting' },
+          { key: 'international', label: 'Best International Feature Film' },
+          { key: 'documentary', label: 'Best Documentary Feature' },
+          { key: 'animated', label: 'Best Animated Feature Film' },
+          { key: 'cinemato', label: 'Best Cinematography' },
+          { key: 'editing', label: 'Best Editing' },
+          { key: 'sound', label: 'Best Sound' },
+          { key: 'score', label: 'Best Original Score' },
+          { key: 'production', label: 'Best Production Design' },
+          { key: 'song', label: 'Best Song' },
+          { key: 'costumes', label: 'Best Costumes' }
+        ],
+        'baftas': [
+          { key: 'picture', label: 'Best Picture' },
+          { key: 'director', label: 'Best Director' },
+          { key: 'actor', label: 'Best Actor' },
+          { key: 'actress', label: 'Best Actress' },
+          { key: 'supporting-actor', label: 'Best Supporting Actor' },
+          { key: 'supporting-actress', label: 'Best Supporting Actress' },
+          { key: 'original', label: 'Best Original Screenplay' },
+          { key: 'adapted', label: 'Best Adapted Screenplay' },
+          { key: 'casting', label: 'Best Casting' },
+          { key: 'british-film', label: 'Best British Film' },
+          { key: 'international', label: 'Best International Feature Film' },
+          { key: 'documentary', label: 'Best Documentary Feature' },
+          { key: 'animated', label: 'Best Animated Feature Film' },
+          { key: 'cinemato', label: 'Best Cinematography' },
+          { key: 'editing', label: 'Best Editing' }
+        ]
       };
 
       const categories = categoriesByEvent[selectedEvent];
       
       const sportsbooksByEvent = {
-        'golden-globes': [
-          { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
-          { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
-          { key: 'scorebet', label: 'ScoreBet', bgColor: 'bg-blue-900', textColor: 'text-white' },
-          { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
-          { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
-          { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' },
-          { key: 'bet365', label: 'Bet365', bgColor: 'bg-green-500', textColor: 'text-yellow-400' },
-          { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
-          { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' },
-          { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
-          { key: 'bovada', label: 'Bovada', bgColor: 'bg-gray-400', textColor: 'text-red-600' }
-        ],
-        'grammys': [
+        'oscars': [
           { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
           { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
           { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
@@ -127,21 +111,17 @@
           { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
           { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
           { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' },
-          { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' },
-          { key: 'bet99', label: 'Bet99', bgColor: 'bg-teal-600', textColor: 'text-white' }
+          { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' }
         ],
-        'oscars': [
-        { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
-        { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
-        { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
-        { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
-        { key: 'bookmaker', label: 'Bookmaker', bgColor: 'bg-purple-600', textColor: 'text-white' },
-        { key: 'thescore', label: 'theScore', bgColor: 'bg-red-600', textColor: 'text-white' },
-        { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
-        { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
-        { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' },
-        { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' }
-      ]
+        'baftas': [
+          { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
+          { key: 'kalshi', label: 'Kalshi', bgColor: 'bg-indigo-600', textColor: 'text-white' },
+          { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
+          { key: 'bet365', label: 'Bet365', bgColor: 'bg-green-500', textColor: 'text-yellow-400' },
+          { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
+          { key: 'scorebet', label: 'ScoreBet', bgColor: 'bg-blue-900', textColor: 'text-white' },
+          { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' }
+        ]
       };
 
       const sportsbooks = sportsbooksByEvent[selectedEvent];
@@ -370,7 +350,7 @@
               <div>
                 <a href="index.html" className="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">← Back to Home</a>
                 <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-                <p className="text-gray-600">{events.find(e => e.key === selectedEvent).label} 2025</p>
+                <p className="text-gray-600">{events.find(e => e.key === selectedEvent).label} 2026</p>
               </div>
               <button
                 onClick={addNominee}
@@ -435,7 +415,7 @@
                   <tbody>
                     {nominees.length === 0 ? (
                       <tr>
-                        <td colSpan={16} className="px-4 py-8 text-center text-gray-500">
+                        <td colSpan={sportsbooks.length + 5} className="px-4 py-8 text-center text-gray-500">
                           No nominees yet. Click "Add Nominee" to get started.
                         </td>
                       </tr>
