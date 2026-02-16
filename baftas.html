@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAFTAs 2026 - Betting Odds</title>
+  
+  <!-- Firebase CDN Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAcJTHkUYTW1zd7PSAHJ6ZpGCxI69CDDaE",
+      authDomain: "odds-32154.firebaseapp.com",
+      databaseURL: "https://odds-32154-default-rtdb.firebaseio.com",
+      projectId: "odds-32154",
+      storageBucket: "odds-32154.firebasestorage.app",
+      messagingSenderId: "239351340320",
+      appId: "1:239351340320:web:88f4473d0ec8801ed4cb45"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-red-900 to-gray-900 min-h-screen">
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const BAFTAsApp = () => {
+      const [selectedCategory, setSelectedCategory] = useState('picture');
+      const [nominees, setNominees] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      const categories = [
+        { key: 'picture', label: 'Best Picture' },
+        { key: 'director', label: 'Best Director' },
+        { key: 'actor', label: 'Best Actor' },
+        { key: 'actress', label: 'Best Actress' },
+        { key: 'supporting-actor', label: 'Best Supporting Actor' },
+        { key: 'supporting-actress', label: 'Best Supporting Actress' },
+        { key: 'original', label: 'Best Original Screenplay' },
+        { key: 'adapted', label: 'Best Adapted Screenplay' },
+        { key: 'casting', label: 'Best Casting' },
+        { key: 'british-film', label: 'Best British Film' },
+        { key: 'international', label: 'Best International Feature Film' },
+        { key: 'documentary', label: 'Best Documentary Feature' },
+        { key: 'animated', label: 'Best Animated Feature Film' },
+        { key: 'cinemato', label: 'Best Cinematography' },
+        { key: 'editing', label: 'Best Editing' }
+      ];
+
+      const sportsbooks = [
+        { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
+        { key: 'kalshi', label: 'Kalshi', bgColor: 'bg-indigo-600', textColor: 'text-white' },
+        { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
+        { key: 'bet365', label: 'Bet365', bgColor: 'bg-green-500', textColor: 'text-yellow-400' },
+        { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
+        { key: 'scorebet', label: 'ScoreBet', bgColor: 'bg-blue-900', textColor: 'text-white' },
+        { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' }
+      ];
+
+      useEffect(() => {
+        loadData();
+      }, [selectedCategory]);
+
+      const loadData = () => {
+        setLoading(true);
+        const dbRef = firebase.database().ref(`baftas/${selectedCategory}/nominees`);
+        
+        dbRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            setNominees(data);
+          } else {
+            setNominees([]);
+          }
+          setLoading(false);
+        });
+
+        return () => dbRef.off();
+      };
+
+      const americanOddsToProb = (odds) => {
+        const num = parseFloat(odds);
+        if (isNaN(num)) return null;
+        if (num < 0) {
+          return Math.abs(num) / (Math.abs(num) + 100);
+        } else {
+          return 100 / (num + 100);
+        }
+      };
+
+      const probToAmericanOdds = (prob) => {
+        if (prob >= 0.5) {
+          return Math.round(-(prob * 100) / (1 - prob));
+        } else {
+          return Math.round(((1 - prob) * 100) / prob);
+        }
+      };
+
+      const calculateAverageOdds = (nominee) => {
+        const probs = sportsbooks
+          .map(book => nominee.odds?.[book.key])
+          .filter(odds => odds && odds !== '-')
+          .map(odds => americanOddsToProb(odds))
+          .filter(prob => prob !== null);
+        
+        if (probs.length === 0) return null;
+        
+        const avgProb = probs.reduce((sum, p) => sum + p, 0) / probs.length;
+        return {
+          odds: probToAmericanOdds(avgProb),
+          percentage: Math.round(avgProb * 100)
+        };
+      };
+
+      const getTimeAgo = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return '1 day ago';
+        return `${diffDays} days ago`;
+      };
+
+      const currentCategory = categories.find(c => c.key === selectedCategory);
+
+      return (
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <a href="index.html" className="text-blue-400 hover:text-blue-300 text-sm mb-2 inline-block">← Back to Home</a>
+            <h1 className="text-5xl font-bold text-white mb-2">🎬 BAFTAs 2026</h1>
+            <p className="text-xl text-gray-300">February 16th, 2026</p>
+          </div>
+
+          {/* Category Selector */}
+          <div className="mb-8">
+            <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg p-4 max-w-4xl mx-auto">
+              <label className="block text-white text-lg font-semibold mb-3">
+                Select Category:
+              </label>
+              <select 
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full bg-gray-800 text-white border-2 border-red-500 rounded-lg px-4 py-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
+              >
+                {categories.map(cat => (
+                  <option key={cat.key} value={cat.key}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Odds Table */}
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl overflow-hidden">
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="text-white text-xl">Loading...</div>
+                </div>
+              ) : nominees.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-white text-xl">No data available for this category yet.</div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-900">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
+                          Nominee
+                        </th>
+                        <th className="px-4 py-4 text-center text-sm font-bold text-white uppercase tracking-wider bg-purple-700">
+                          Avg Odds
+                        </th>
+                        {sportsbooks.map(book => (
+                          <th key={book.key} className={`px-4 py-4 text-center text-sm font-bold uppercase tracking-wider ${book.bgColor} ${book.textColor}`}>
+                            {book.label}
+                          </th>
+                        ))}
+                        <th className="px-4 py-4 text-center text-xs text-gray-400 uppercase">
+                          Updated
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nominees.map((nominee, idx) => {
+                        const avgData = calculateAverageOdds(nominee);
+                        return (
+                          <tr key={nominee.id} className={idx % 2 === 0 ? 'bg-gray-800 bg-opacity-50' : 'bg-gray-900 bg-opacity-30'}>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center">
+                                {nominee.thumbnail && (
+                                  <img src={nominee.thumbnail} alt={nominee.name} className="w-12 h-12 rounded mr-4 object-cover" />
+                                )}
+                                <span className="text-white font-semibold text-lg">{nominee.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-center bg-purple-700">
+                              {avgData ? (
+                                <div className="flex flex-col items-center">
+                                  <span className="font-bold text-white text-lg">
+                                    {avgData.odds > 0 ? '+' : ''}{avgData.odds}
+                                  </span>
+                                  <span className="text-xs text-white opacity-75">
+                                    ({avgData.percentage}%)
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-white opacity-50">-</span>
+                              )}
+                            </td>
+                            {sportsbooks.map(book => {
+                              const odds = nominee.odds?.[book.key];
+                              return (
+                                <td key={book.key} className={`px-4 py-4 text-center ${book.bgColor}`}>
+                                  {odds ? (
+                                    <span className={`font-bold text-lg ${book.textColor}`}>
+                                      {odds}
+                                    </span>
+                                  ) : (
+                                    <span className={`${book.textColor} opacity-50`}>-</span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                            <td className="px-4 py-4 text-center text-xs text-gray-400">
+                              {getTimeAgo(nominee.lastUpdated)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-12">
+            <p className="text-gray-400 text-sm mb-4">
+              Odds are updated daily via automated scripts. Last updated: {nominees[0]?.lastUpdated || 'N/A'}
+            </p>
+            <p className="text-gray-500 text-xs">
+              Come on you Spurs
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<BAFTAsApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>
