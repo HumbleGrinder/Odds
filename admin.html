@@ -235,7 +235,37 @@
               const updatedNominee = { ...nominee };
               
               if (editingCell.subfield) {
-                updatedNominee.odds = { ...updatedNominee.odds, [editingCell.subfield]: tempValue };
+                // Convert percentage to American odds if needed
+                let valueToSave = tempValue.trim();
+                
+                // Skip processing if empty or just a dash
+                if (!valueToSave || valueToSave === '-') {
+                  updatedNominee.odds = { ...updatedNominee.odds, [editingCell.subfield]: valueToSave };
+                  updatedNominee.lastUpdated = new Date().toISOString().split('T')[0];
+                  return updatedNominee;
+                }
+                
+                // Check if input is a percentage
+                if (valueToSave.includes('%')) {
+                  // Remove % and convert (e.g., "65%" -> 0.65)
+                  const percentage = parseFloat(valueToSave.replace('%', ''));
+                  const prob = percentage / 100;
+                  valueToSave = probToAmericanOdds(prob).toString();
+                  if (parseFloat(valueToSave) > 0) valueToSave = '+' + valueToSave;
+                } else if (valueToSave.includes('.') && parseFloat(valueToSave) > 0 && parseFloat(valueToSave) < 1) {
+                  // Decimal between 0 and 1 (e.g., "0.65" -> -185)
+                  const prob = parseFloat(valueToSave);
+                  valueToSave = probToAmericanOdds(prob).toString();
+                  if (parseFloat(valueToSave) > 0) valueToSave = '+' + valueToSave;
+                } else {
+                  // Check if it's a positive number without a sign
+                  const numValue = parseFloat(valueToSave);
+                  if (!isNaN(numValue) && numValue > 0 && !valueToSave.startsWith('+') && !valueToSave.startsWith('-')) {
+                    valueToSave = '+' + valueToSave;
+                  }
+                }
+                
+                updatedNominee.odds = { ...updatedNominee.odds, [editingCell.subfield]: valueToSave };
                 updatedNominee.lastUpdated = new Date().toISOString().split('T')[0];
               } else {
                 updatedNominee[editingCell.field] = tempValue;
@@ -393,6 +423,27 @@
               </select>
             </div>
 
+            {/* Help Box */}
+            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <div className="text-blue-600 mr-3 text-xl">💡</div>
+                <div>
+                  <h3 className="text-sm font-semibold text-blue-900 mb-1">Quick Tip: Auto-Convert & Format Odds</h3>
+                  <p className="text-xs text-blue-800 mb-1">
+                    Enter percentages:
+                    <span className="font-mono mx-1 bg-blue-100 px-1 rounded">65%</span> or 
+                    <span className="font-mono mx-1 bg-blue-100 px-1 rounded">0.65</span> → converts to 
+                    <span className="font-mono mx-1 bg-blue-100 px-1 rounded">-185</span>
+                  </p>
+                  <p className="text-xs text-blue-800">
+                    Positive numbers auto-add +:
+                    <span className="font-mono mx-1 bg-blue-100 px-1 rounded">350</span> → saves as 
+                    <span className="font-mono mx-1 bg-blue-100 px-1 rounded">+350</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -502,8 +553,9 @@
                                       if (e.key === 'Enter') saveEdit();
                                       if (e.key === 'Escape') cancelEdit();
                                     }}
-                                    className="w-20 px-2 py-1 border border-blue-500 rounded text-center"
-                                    placeholder="-130"
+                                    className="w-24 px-2 py-1 border border-blue-500 rounded text-center text-sm"
+                                    placeholder="65% or -150"
+                                    title="Enter as percentage (65%), decimal (0.65), or American odds (-150)"
                                     autoFocus
                                   />
                                 ) : (
