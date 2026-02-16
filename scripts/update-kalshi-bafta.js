@@ -127,33 +127,19 @@ async function updateCategory(seriesTicker, firebasePath, categoryName) {
 // Main
 async function main() {
   console.log('=== Updating Kalshi BAFTA Odds ===');
-  console.log(`Time: ${new Date().toISOString()}\n`);
+  console.log(`Time: ${new Date().toISOString()}`);
+  console.log('Note: Kalshi only has 6 BAFTA categories available\n');
   
+  // NOTE: Kalshi only has these 6 BAFTA markets currently available
+  // Other categories don't exist on their platform yet
   const categories = [
-    // Main categories
     { ticker: 'KXBAFTAFILM', path: 'baftas/picture', name: 'Best Picture' },
-    { ticker: 'KXBAFTADIRE', path: 'baftas/director', name: 'Best Director' },
-    
-    // Acting categories
-    { ticker: 'KXBAFTAACTO', path: 'baftas/actor', name: 'Best Actor' },
-    { ticker: 'KXBAFTAACTR', path: 'baftas/actress', name: 'Best Actress' },
+    { ticker: 'KXBAFTADIR', path: 'baftas/director', name: 'Best Director' },
+    { ticker: 'KXBAFTAACTO', path: 'baftas/actor', name: 'Best Leading Actor' },
+    { ticker: 'KXBAFTAACTR', path: 'baftas/actress', name: 'Best Leading Actress' },
     { ticker: 'KXBAFTASUPACTO', path: 'baftas/supporting-actor', name: 'Best Supporting Actor' },
     { ticker: 'KXBAFTASUPACTR', path: 'baftas/supporting-actress', name: 'Best Supporting Actress' },
-    
-    // Writing categories
-    { ticker: 'KXBAFTAORIG', path: 'baftas/original', name: 'Best Original Screenplay' },
-    { ticker: 'KXBAFTAADAP', path: 'baftas/adapted', name: 'Best Adapted Screenplay' },
-    
-    // Other categories
-    { ticker: 'KXBAFTACAST', path: 'baftas/casting', name: 'Best Casting' },
-    { ticker: 'KXBAFTABRIT', path: 'baftas/british-film', name: 'Best British Film' },
-    { ticker: 'KXBAFTAINTE', path: 'baftas/international', name: 'Best International Feature Film' },
-    { ticker: 'KXBAFTADOCU', path: 'baftas/documentary', name: 'Best Documentary Feature' },
-    { ticker: 'KXBAFTAANIM', path: 'baftas/animated', name: 'Best Animated Feature Film' },
-    
-    // Technical categories
-    { ticker: 'KXBAFTACINE', path: 'baftas/cinemato', name: 'Best Cinematography' },
-    { ticker: 'KXBAFTAEDIT', path: 'baftas/editing', name: 'Best Editing' }
+    { ticker: 'KXBAFTAOSPLAY', path: 'baftas/original', name: 'Best Original Screenplay' }
   ];
   
   for (const category of categories) {
