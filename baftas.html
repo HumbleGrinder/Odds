@@ -27,7 +27,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-fixed" style="background-image: url('images/hamnetbg2.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+<body class="bg-gradient-to-br from-gray-900 via-red-900 to-gray-900 min-h-screen">
   <div id="root"></div>
   
   <script type="text/babel">
@@ -133,6 +133,33 @@
         return `${diffDays} days ago`;
       };
 
+      const findBestOdds = (nominee) => {
+        const oddsArray = sportsbooks
+          .map(book => ({
+            book: book.key,
+            odds: nominee.odds?.[book.key]
+          }))
+          .filter(item => item.odds && item.odds !== '-');
+        
+        if (oddsArray.length === 0) return null;
+        
+        let best = oddsArray[0];
+        oddsArray.forEach(item => {
+          const current = parseFloat(item.odds);
+          const bestVal = parseFloat(best.odds);
+          
+          if (current < 0 && bestVal < 0) {
+            if (current > bestVal) best = item;
+          } else if (current > 0 && bestVal > 0) {
+            if (current > bestVal) best = item;
+          } else if (current > 0 && bestVal < 0) {
+            best = item;
+          }
+        });
+        
+        return best.book;
+      };
+
       const currentCategory = categories.find(c => c.key === selectedCategory);
 
       return (
@@ -141,7 +168,7 @@
           <div className="text-center mb-8">
             <a href="index.html" className="text-blue-400 hover:text-blue-300 text-sm mb-2 inline-block">← Back to Home</a>
             <h1 className="text-5xl font-bold text-white mb-2">🎬 BAFTAs 2026</h1>
-            <p className="text-xl text-gray-300">February 22, 2026</p>
+            <p className="text-xl text-gray-300">February 16th, 2026</p>
           </div>
 
           {/* Category Selector */}
@@ -223,14 +250,22 @@
                             </td>
                             {sportsbooks.map(book => {
                               const odds = nominee.odds?.[book.key];
+                              const bestBook = findBestOdds(nominee);
+                              const isBest = book.key === bestBook;
                               return (
-                                <td key={book.key} className={`px-4 py-4 text-center ${book.bgColor}`}>
+                                <td 
+                                  key={book.key} 
+                                  className={`px-4 py-4 text-center ${book.bgColor}`}
+                                  style={isBest ? { backgroundColor: '#ffff00' } : {}}
+                                >
                                   {odds ? (
-                                    <span className={`font-bold text-lg ${book.textColor}`}>
+                                    <span 
+                                      className={`text-lg ${isBest ? 'font-black text-black' : `font-bold ${book.textColor}`}`}
+                                    >
                                       {odds}
                                     </span>
                                   ) : (
-                                    <span className={`${book.textColor} opacity-50`}>-</span>
+                                    <span className={book.textColor} style={{ opacity: 0.5 }}>-</span>
                                   )}
                                 </td>
                               );
@@ -251,7 +286,7 @@
           {/* Footer */}
           <div className="text-center mt-12">
             <p className="text-gray-400 text-sm mb-4">
-              Be careful, the British people are weird as hell about who they reward
+              Odds are updated daily via automated scripts. Last updated: {nominees[0]?.lastUpdated || 'N/A'}
             </p>
             <p className="text-gray-500 text-xs">
               Come on you Spurs
