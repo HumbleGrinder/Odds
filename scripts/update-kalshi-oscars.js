@@ -126,20 +126,20 @@ async function updateCategory(seriesTicker, firebasePath, categoryName) {
 
 // Main
 async function main() {
-  console.log('=== Updating Kalshi BAFTA Odds ===');
+  console.log('=== Updating Kalshi Oscars Odds ===');
   console.log(`Time: ${new Date().toISOString()}`);
-  console.log('Note: Kalshi only has 6 BAFTA categories available\n');
+  console.log('Note: Kalshi only has 6 Oscars categories available\n');
   
-  // NOTE: Kalshi only has these 6 BAFTA markets currently available
+  // NOTE: Kalshi only has these 6 Oscars markets currently available
   // Other categories don't exist on their platform yet
   const categories = [
-    { ticker: 'KXBAFTAFILM', path: 'baftas/picture', name: 'Best Picture' },
-    { ticker: 'KXBAFTADIR', path: 'baftas/director', name: 'Best Director' },
-    { ticker: 'KXBAFTAACTO', path: 'baftas/actor', name: 'Best Leading Actor' },
-    { ticker: 'KXBAFTAACTR', path: 'baftas/actress', name: 'Best Leading Actress' },
-    { ticker: 'KXBAFTASUPACTO', path: 'baftas/supporting-actor', name: 'Best Supporting Actor' },
-    { ticker: 'KXBAFTASUPACTR', path: 'baftas/supporting-actress', name: 'Best Supporting Actress' },
-    { ticker: 'KXBAFTAOSPLAY', path: 'baftas/original', name: 'Best Original Screenplay' }
+    { ticker: 'kxoscarpic', path: 'oscars/picture', name: 'Best Picture' },
+    { ticker: 'kxoscadir', path: 'oscars/director', name: 'Best Director' },
+    { ticker: 'kxoscaracto', path: 'oscars/actor', name: 'Best Leading Actor' },
+    { ticker: 'kxoscaractr', path: 'oscars/actress', name: 'Best Leading Actress' },
+    { ticker: 'kxoscarsupacto', path: 'oscars/supporting-actor', name: 'Best Supporting Actor' },
+    { ticker: 'kxoscarsupactr', path: 'oscars/supporting-actress', name: 'Best Supporting Actress' },
+    { ticker: 'kxoscarosplay', path: 'oscars/original', name: 'Best Original Screenplay' }
   ];
   
   for (const category of categories) {
