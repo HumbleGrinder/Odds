@@ -133,13 +133,13 @@ async function main() {
   // NOTE: Kalshi only has these 6 Oscars markets currently available
   // Other categories don't exist on their platform yet
   const categories = [
-    { ticker: 'kxoscarpic', path: 'oscars/picture', name: 'Best Picture' },
-    { ticker: 'kxoscadir', path: 'oscars/director', name: 'Best Director' },
-    { ticker: 'kxoscaracto', path: 'oscars/actor', name: 'Best Leading Actor' },
-    { ticker: 'kxoscaractr', path: 'oscars/actress', name: 'Best Leading Actress' },
-    { ticker: 'kxoscarsupacto', path: 'oscars/supporting-actor', name: 'Best Supporting Actor' },
-    { ticker: 'kxoscarsupactr', path: 'oscars/supporting-actress', name: 'Best Supporting Actress' },
-    { ticker: 'kxoscarosplay', path: 'oscars/original', name: 'Best Original Screenplay' }
+    { ticker: 'KXOSCARPIC', path: 'oscars/picture', name: 'Best Picture' },
+    { ticker: 'KXOSCARDIR', path: 'oscars/director', name: 'Best Director' },
+    { ticker: 'KXOSCARACTO', path: 'oscars/actor', name: 'Best Leading Actor' },
+    { ticker: 'KXOSCARACTR', path: 'oscars/actress', name: 'Best Leading Actress' },
+    { ticker: 'KXOSCARSUPACTO', path: 'oscars/supporting-actor', name: 'Best Supporting Actor' },
+    { ticker: 'KXOSCARSUPACTR', path: 'oscars/supporting-actress', name: 'Best Supporting Actress' },
+    { ticker: 'KXOSCAROSPLAY', path: 'oscars/original', name: 'Best Original Screenplay' }
   ];
   
   for (const category of categories) {
