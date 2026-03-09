@@ -10,86 +10,189 @@
   <meta property="og:url" content="https://awardsodds.com/" />
   <meta property="og:type" content="website" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0f;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* Animated gold shimmer on the giant button */
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .oscars-mega-btn {
+      background: linear-gradient(135deg,
+        #b8860b 0%, #f5c842 20%, #ffd700 35%,
+        #fffacd 50%, #ffd700 65%, #e8a910 80%, #b8860b 100%
+      );
+      background-size: 200% auto;
+      animation: shimmer 3s linear infinite;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 0 60px rgba(245, 200, 66, 0.35), 0 30px 80px rgba(0,0,0,0.5);
+    }
+
+    .oscars-mega-btn:hover {
+      transform: scale(1.015);
+      box-shadow: 0 0 100px rgba(245, 200, 66, 0.55), 0 40px 100px rgba(0,0,0,0.6);
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245,200,66,0.5); }
+      50%       { box-shadow: 0 0 0 20px rgba(245,200,66,0); }
+    }
+
+    .live-badge {
+      animation: pulse-glow 2s infinite;
+    }
+
+    .archived-section h3 {
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.2em;
+    }
+
+    /* starfield effect */
+    .stars {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 70%, rgba(255,255,255,0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,0.15) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 20% 85%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 90%, rgba(255,255,255,0.15) 0%, transparent 100%),
+        radial-gradient(2px 2px at 45% 10%, rgba(245,200,66,0.2) 0%, transparent 100%),
+        radial-gradient(2px 2px at 65% 50%, rgba(245,200,66,0.15) 0%, transparent 100%);
+    }
+
+    .content { position: relative; z-index: 1; }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-yellow-900 to-gray-900 min-h-screen">
-  <div class="container mx-auto px-4 py-16">
-    <div class="text-center mb-16">
-      <h1 class="text-6xl font-bold text-white mb-4">🏆 Awards Odds Tracker</h1>
-      <p class="text-xl text-gray-300">Mostly Canadian betting odds for all the major Award Shows</p>
+<body class="min-h-screen">
+  <div class="stars"></div>
+
+  <div class="content container mx-auto px-4 py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="hero-title text-5xl font-black text-white mb-2">🏆 Awards Odds Tracker</h1>
+      <p class="text-gray-400 text-base tracking-widest uppercase text-sm">Mostly Canadian betting odds for all the major Award Shows</p>
     </div>
 
-    <div class="max-w-4xl mx-auto grid gap-6">
-      <!-- Oscars Card - ACTIVE -->
+    <!-- ===== COMICALLY MASSIVE OSCARS BUTTON ===== -->
+    <div class="max-w-5xl mx-auto mb-6">
       <a href="oscars.html" class="block">
-        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg shadow-xl p-8 transform hover:scale-105 transition duration-300 hover:shadow-2xl">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="inline-block bg-white text-orange-900 text-xs font-bold px-3 py-1 rounded-full mb-2">LIVE NOW</div>
-              <h2 class="text-3xl font-bold text-white mb-2">Oscars 2026</h2>
-              <p class="text-yellow-100">March 2nd 2026</p>
-            </div>
-            <div class="text-4xl">🏆</div>
+        <div class="oscars-mega-btn rounded-3xl p-16 md:p-24 text-center relative overflow-hidden" style="min-height: 55vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+
+          <!-- Trophy watermark -->
+          <div style="position:absolute; font-size: 28rem; opacity:0.06; top:50%; left:50%; transform:translate(-50%,-55%); pointer-events:none; line-height:1; user-select:none;">
+            🏆
+          </div>
+
+          <!-- LIVE badge -->
+          <div class="live-badge inline-block bg-black text-yellow-400 text-sm font-black px-6 py-2 rounded-full mb-8 tracking-widest uppercase" style="border: 2px solid rgba(0,0,0,0.3);">
+            🔴 LIVE NOW
+          </div>
+
+          <!-- Title -->
+          <h2 class="hero-title text-7xl md:text-9xl font-black text-gray-900 mb-4 leading-none" style="text-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+            Oscars 2026
+          </h2>
+
+          <!-- Subtitle -->
+          <p class="text-gray-800 text-2xl md:text-3xl font-semibold mb-6 opacity-80">March 2nd, 2026</p>
+
+          <!-- CTA -->
+          <div class="inline-block bg-gray-900 text-yellow-400 rounded-2xl px-10 py-4 text-xl font-bold tracking-wide" style="border: 2px solid rgba(255,255,255,0.2);">
+            View All Odds →
           </div>
         </div>
       </a>
+    </div>
 
-      <!-- BAFTAs Card - ACTIVE -->
-      <a href="baftas.html" class="block">
-        <div class="bg-gradient-to-r from-red-600 to-blue-600 rounded-lg shadow-xl p-8 transform hover:scale-105 transition duration-300 hover:shadow-2xl">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="inline-block bg-white text-red-900 text-xs font-bold px-3 py-1 rounded-full mb-2">LIVE NOW</div>
-              <h2 class="text-3xl font-bold text-white mb-2">BAFTA 2026</h2>
-              <p class="text-blue-100">February 22 2026</p>
-            </div>
-            <div class="text-4xl">🎬</div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Coming Soon Cards -->
-      <a>
-      <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-xl p-8 border-2 border-dashed border-gray-600">
-        <div class="flex items-center justify-between opacity-50">
-          <div>
-            <h2 class="text-2xl font-bold text-white mb-2">SAG Awards</h2>
-            <p class="text-gray-400">Coming Soon... when they actually get odds....</p>
-          </div>
-          <div class="text-4xl">⏳</div>
-        </div>
-      </div>
-      </a>
-
-    <!-- Grammys Card - ARCHIVED -->
-    <a href="grammys.html" class="block opacity-50 hover:opacity-70 transition">
-      <div class="bg-gray-300 rounded-lg shadow-md p-6 border-2 border-gray-400">
+    <!-- SAG Coming Soon (smaller) -->
+    <div class="max-w-5xl mx-auto mb-12">
+      <div class="rounded-xl p-6 border-2 border-dashed border-gray-700 opacity-40" style="background: rgba(255,255,255,0.02);">
         <div class="flex items-center justify-between">
           <div>
-            <div class="inline-block bg-gray-600 text-white text-xs px-2 py-1 rounded mb-2">COMPLETED</div>
-            <h2 class="text-2xl font-bold text-gray-700 mb-1">Grammys 2025</h2>
-            <p class="text-gray-500 text-sm">View final results</p>
+            <h2 class="text-xl font-bold text-white mb-1">SAG Awards</h2>
+            <p class="text-gray-500 text-sm">Coming Soon... when they actually get odds....</p>
           </div>
-          <div class="text-3xl">🎵</div>
+          <div class="text-3xl">⏳</div>
         </div>
       </div>
-    </a>
-    <!-- Golden Globes Card - ARCHIVED -->
-    <a href="golden-globes.html" class="block opacity-50 hover:opacity-70 transition">
-      <div class="bg-gray-300 rounded-lg shadow-md p-6 border-2 border-gray-400">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="inline-block bg-gray-600 text-white text-xs px-2 py-1 rounded mb-2">COMPLETED</div>
-            <h2 class="text-2xl font-bold text-gray-700 mb-1">Golden Globes 2025</h2>
-            <p class="text-gray-500 text-sm">View final results</p>
-          </div>
-          <div class="text-3xl">🎬</div>
-        </div>
-      </div>
-    </a>
+    </div>
 
-    <footer class="text-center mt-16 text-gray-400 text-sm">
+    <!-- ===== ARCHIVED / COMPLETED SECTION ===== -->
+    <div class="max-w-5xl mx-auto">
+      <div class="archived-section">
+        <h3 class="text-gray-600 text-xs font-bold uppercase tracking-widest text-center mb-5">
+          — Completed Events —
+        </h3>
+
+        <div class="grid gap-3">
+
+          <!-- BAFTAs - ARCHIVED -->
+          <a href="baftas.html" class="block opacity-50 hover:opacity-70 transition-opacity duration-200">
+            <div class="rounded-xl p-5 border border-gray-700" style="background: rgba(255,255,255,0.03);">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="inline-block bg-gray-700 text-gray-300 text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wider">Completed</div>
+                  <h2 class="text-xl font-bold text-gray-400 mb-1">BAFTA 2026</h2>
+                  <p class="text-gray-600 text-sm">February 22, 2026 · View final results</p>
+                </div>
+                <div class="text-3xl opacity-60">🎬</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- Grammys - ARCHIVED -->
+          <a href="grammys.html" class="block opacity-50 hover:opacity-70 transition-opacity duration-200">
+            <div class="rounded-xl p-5 border border-gray-700" style="background: rgba(255,255,255,0.03);">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="inline-block bg-gray-700 text-gray-300 text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wider">Completed</div>
+                  <h2 class="text-xl font-bold text-gray-400 mb-1">Grammys 2025</h2>
+                  <p class="text-gray-600 text-sm">View final results</p>
+                </div>
+                <div class="text-3xl opacity-60">🎵</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- Golden Globes - ARCHIVED -->
+          <a href="golden-globes.html" class="block opacity-50 hover:opacity-70 transition-opacity duration-200">
+            <div class="rounded-xl p-5 border border-gray-700" style="background: rgba(255,255,255,0.03);">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="inline-block bg-gray-700 text-gray-300 text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wider">Completed</div>
+                  <h2 class="text-xl font-bold text-gray-400 mb-1">Golden Globes 2025</h2>
+                  <p class="text-gray-600 text-sm">View final results</p>
+                </div>
+                <div class="text-3xl opacity-60">🌟</div>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center mt-14 text-gray-700 text-xs">
       <p>Come on you Spurs</p>
     </footer>
+
   </div>
 </body>
 </html>
