@@ -46,10 +46,10 @@ async function fetchKalshiData(seriesTicker) {
     
     for (const market of data.markets) {
       try {
-        // Extract nominee name from market title or ticker
-        // Kalshi market titles typically include the nominee name
-        const name = market.title || market.subtitle || '';
-        const yesPrice = market.yes_price; // Price in cents (0-100)
+        // Extract nominee name from custom_strike or subtitle
+        // Kalshi markets have the nominee name in custom_strike.Nominee
+        const name = market.custom_strike?.Nominee || market.subtitle || '';
+        const yesPrice = market.yes_ask; // Price in cents (0-100)
         
         if (name && yesPrice !== undefined && yesPrice !== null) {
           nominees.push({
