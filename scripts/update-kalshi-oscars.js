@@ -46,10 +46,10 @@ async function fetchKalshiData(seriesTicker) {
     
     for (const market of data.markets) {
       try {
-        // Extract nominee name from market title or ticker
-        // Kalshi market titles typically include the nominee name
-        const name = market.title || market.subtitle || '';
-        const yesPrice = market.yes_price; // Price in cents (0-100)
+        // Extract nominee name from custom_strike or subtitle
+        // Kalshi markets have the nominee name in custom_strike.Nominee
+        const name = market.custom_strike?.Nominee || market.subtitle || '';
+        const yesPrice = market.yes_ask; // Price in cents (0-100)
         
         if (name && yesPrice !== undefined && yesPrice !== null) {
           nominees.push({
@@ -126,20 +126,20 @@ async function updateCategory(seriesTicker, firebasePath, categoryName) {
 
 // Main
 async function main() {
-  console.log('=== Updating Kalshi BAFTA Odds ===');
+  console.log('=== Updating Kalshi Oscars Odds ===');
   console.log(`Time: ${new Date().toISOString()}`);
-  console.log('Note: Kalshi only has 6 BAFTA categories available\n');
+  console.log('Note: Kalshi only has 6 Oscars categories available\n');
   
-  // NOTE: Kalshi only has these 6 BAFTA markets currently available
+  // NOTE: Kalshi only has these 6 Oscars markets currently available
   // Other categories don't exist on their platform yet
   const categories = [
-    { ticker: 'KXBAFTAFILM', path: 'baftas/picture', name: 'Best Picture' },
-    { ticker: 'KXBAFTADIR', path: 'baftas/director', name: 'Best Director' },
-    { ticker: 'KXBAFTAACTO', path: 'baftas/actor', name: 'Best Leading Actor' },
-    { ticker: 'KXBAFTAACTR', path: 'baftas/actress', name: 'Best Leading Actress' },
-    { ticker: 'KXBAFTASUPACTO', path: 'baftas/supporting-actor', name: 'Best Supporting Actor' },
-    { ticker: 'KXBAFTASUPACTR', path: 'baftas/supporting-actress', name: 'Best Supporting Actress' },
-    { ticker: 'KXBAFTAOSPLAY', path: 'baftas/original', name: 'Best Original Screenplay' }
+    { ticker: 'KXOSCARPIC', path: 'oscars/picture', name: 'Best Picture' },
+    { ticker: 'KXOSCARDIR', path: 'oscars/director', name: 'Best Director' },
+    { ticker: 'KXOSCARACTO', path: 'oscars/actor', name: 'Best Leading Actor' },
+    { ticker: 'KXOSCARACTR', path: 'oscars/actress', name: 'Best Leading Actress' },
+    { ticker: 'KXOSCARSUPACTO', path: 'oscars/supporting-actor', name: 'Best Supporting Actor' },
+    { ticker: 'KXOSCARSUPACTR', path: 'oscars/supporting-actress', name: 'Best Supporting Actress' },
+    { ticker: 'KXOSCAROSPLAY', path: 'oscars/original', name: 'Best Original Screenplay' }
   ];
   
   for (const category of categories) {

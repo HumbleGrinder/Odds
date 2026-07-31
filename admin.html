@@ -102,16 +102,18 @@
       
       const sportsbooksByEvent = {
         'oscars': [
-          { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
-          { key: 'fanduel', label: 'FanDuel', bgColor: 'bg-blue-300', textColor: 'text-white' },
-          { key: 'draftkings', label: 'DraftKings', bgColor: 'bg-green-500', textColor: 'text-black' },
-          { key: 'betonline', label: 'BetOnline', bgColor: 'bg-gray-400', textColor: 'text-black' },
-          { key: 'bookmaker', label: 'Bookmaker', bgColor: 'bg-purple-600', textColor: 'text-white' },
-          { key: 'thescore', label: 'theScore', bgColor: 'bg-red-600', textColor: 'text-white' },
-          { key: 'betano', label: 'Betano', bgColor: 'bg-orange-500', textColor: 'text-white' },
-          { key: 'kambi', label: 'Kambi', bgColor: 'bg-white', textColor: 'text-blue-600' },
-          { key: 'betmgm', label: 'BetMGM', bgColor: 'bg-yellow-500', textColor: 'text-black' },
-          { key: 'pointsbet', label: 'PointsBet', bgColor: 'bg-black', textColor: 'text-red-500' }
+          { key: 'polymarket',  label: 'Polymarket',  bgColor: 'bg-blue-600',   textColor: 'text-white' },
+          { key: 'kalshi',      label: 'Kalshi',      bgColor: 'bg-indigo-600', textColor: 'text-white' },
+          { key: 'fanduel',     label: 'FanDuel',     bgColor: 'bg-blue-300',   textColor: 'text-white' },
+          { key: 'draftkings',  label: 'DraftKings',  bgColor: 'bg-green-500',  textColor: 'text-black' },
+          { key: 'betonline',   label: 'BetOnline',   bgColor: 'bg-gray-400',   textColor: 'text-black' },
+          { key: 'bookmaker',   label: 'Bookmaker',   bgColor: 'bg-purple-600', textColor: 'text-white' },
+          { key: 'thescore',    label: 'theScore',    bgColor: 'bg-red-600',    textColor: 'text-white' },
+          { key: 'betano',      label: 'Betano',      bgColor: 'bg-orange-500', textColor: 'text-white' },
+          { key: 'kambi',       label: 'Kambi',       bgColor: 'bg-white',      textColor: 'text-blue-600' },
+          { key: 'betmgm',      label: 'BetMGM',      bgColor: 'bg-yellow-500', textColor: 'text-black' },
+          { key: 'pointsbet',   label: 'PointsBet',   bgColor: 'bg-black',      textColor: 'text-red-500' },
+          { key: 'bet99',       label: 'Bet99',       bgColor: 'bg-red-700',    textColor: 'text-white' },
         ],
         'baftas': [
           { key: 'polymarket', label: 'Polymarket', bgColor: 'bg-blue-600', textColor: 'text-white' },
@@ -137,7 +139,6 @@
       }, [isAuthenticated, selectedEvent, selectedCategory]);
 
       useEffect(() => {
-        // Reset category when event changes
         setSelectedCategory(categoriesByEvent[selectedEvent][0].key);
       }, [selectedEvent]);
 
@@ -175,7 +176,6 @@
       const handleLogin = async () => {
         if (password === ADMIN_PASSWORD) {
           try {
-            // Sign in anonymously to Firebase (enables write access)
             const userCredential = await firebase.auth().signInAnonymously();
             setFirebaseAuth(userCredential.user);
             setIsAuthenticated(true);
@@ -217,13 +217,11 @@
       const startEdit = (nomineeId, field, subfield = null) => {
         const nominee = nominees.find(n => n.id === nomineeId);
         let currentValue = '';
-        
         if (subfield) {
           currentValue = nominee.odds?.[subfield] || '';
         } else {
           currentValue = nominee[field] || '';
         }
-        
         setEditingCell({ nomineeId, field, subfield });
         setTempValue(currentValue);
       };
@@ -235,30 +233,24 @@
               const updatedNominee = { ...nominee };
               
               if (editingCell.subfield) {
-                // Convert percentage to American odds if needed
                 let valueToSave = tempValue.trim();
                 
-                // Skip processing if empty or just a dash
                 if (!valueToSave || valueToSave === '-') {
                   updatedNominee.odds = { ...updatedNominee.odds, [editingCell.subfield]: valueToSave };
                   updatedNominee.lastUpdated = new Date().toISOString().split('T')[0];
                   return updatedNominee;
                 }
                 
-                // Check if input is a percentage
                 if (valueToSave.includes('%')) {
-                  // Remove % and convert (e.g., "65%" -> 0.65)
                   const percentage = parseFloat(valueToSave.replace('%', ''));
                   const prob = percentage / 100;
                   valueToSave = probToAmericanOdds(prob).toString();
                   if (parseFloat(valueToSave) > 0) valueToSave = '+' + valueToSave;
                 } else if (valueToSave.includes('.') && parseFloat(valueToSave) > 0 && parseFloat(valueToSave) < 1) {
-                  // Decimal between 0 and 1 (e.g., "0.65" -> -185)
                   const prob = parseFloat(valueToSave);
                   valueToSave = probToAmericanOdds(prob).toString();
                   if (parseFloat(valueToSave) > 0) valueToSave = '+' + valueToSave;
                 } else {
-                  // Check if it's a positive number without a sign
                   const numValue = parseFloat(valueToSave);
                   if (!isNaN(numValue) && numValue > 0 && !valueToSave.startsWith('+') && !valueToSave.startsWith('-')) {
                     valueToSave = '+' + valueToSave;

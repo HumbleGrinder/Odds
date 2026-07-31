@@ -27,7 +27,7 @@ jobs:
       - name: Run Kalshi BAFTA update script
         env:
           FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
-        run: node scripts/update-kalshi-bafta.js
+        run: node scripts/update-kalshi-oscars.js
       
       - name: Log completion
-        run: echo "Kalshi BAFTA odds updated successfully at $(date)"
+        run: echo "Kalshi Oscars odds updated successfully at $(date)"
